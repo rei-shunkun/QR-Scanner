@@ -2,15 +2,69 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>QRコードスキャン</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    .qr-block {
-      margin-bottom: 30px;
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
     }
-    #qr-reader-order, #qr-reader-location {
-      width: 300px;
-      margin-top: 10px;
+
+    .qr-block {
+      margin-bottom: 40px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .qr-block label {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 8px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 1rem;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    #qr-reader-order,
+    #qr-reader-location {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+
+    #result {
+      text-align: center;
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -19,23 +73,25 @@
   <!-- 注文番号 -->
   <div class="qr-block">
     <label for="order-number">注文番号:</label>
-    <input type="text" id="order-number" />
-    <button onclick="startScan('order')">QRスキャン</button>
+    <div class="input-group">
+      <input type="text" id="order-number" />
+      <button onclick="startScan('order')">QRスキャン</button>
+    </div>
     <div id="qr-reader-order"></div>
   </div>
 
   <!-- 置場番号 -->
   <div class="qr-block">
     <label for="location-number">置場番号:</label>
-    <input type="text" id="location-number" />
-    <button onclick="startScan('location')">QRスキャン</button>
+    <div class="input-group">
+      <input type="text" id="location-number" />
+      <button onclick="startScan('location')">QRスキャン</button>
+    </div>
     <div id="qr-reader-location"></div>
   </div>
 
   <div id="result">
-    <button>
-        照合
-    </button>
+    <button>照合</button>
   </div>
 
   <script>
@@ -45,12 +101,11 @@
       const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
       const inputId = type === 'order' ? "order-number" : "location-number";
 
-      // 若已有 scanner，先停止再重新初始化
       if (scanners[type]) {
         scanners[type].stop().then(() => {
           document.getElementById(readerId).innerHTML = "";
           scanners[type] = null;
-          startScan(type); // 递归重新启动
+          startScan(type);
         });
         return;
       }
@@ -64,17 +119,18 @@
           fps: 10,
           qrbox: 250
         },
-        (decodedText, decodedResult) => {
+        (decodedText) => {
           document.getElementById(inputId).value = decodedText;
-          qrReader.stop(); // 自动关闭摄像头
+          qrReader.stop();
           scanners[type] = null;
           document.getElementById(readerId).innerHTML = "";
         },
         (errorMessage) => {
-          // 扫描失败时的回调（可省略）
+          // console.warn("読み取り失敗", errorMessage);
         }
       ).catch(err => {
-        console.error("摄像头启动失败:", err);
+        alert("カメラにアクセスできませんでした。");
+        console.error(err);
       });
     }
   </script>
