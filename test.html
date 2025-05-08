@@ -6,65 +6,132 @@
     <title>QRコードスキャン</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
+      /* 全局设置 */
       body {
-        font-family: sans-serif;
-        padding: 20px;
-        background-color: #f9f9f9;
+        font-family: "Segoe UI", sans-serif;
+        padding: 1rem;
+        margin: 0;
+        background-color: #f2f2f2;
+        color: #333;
       }
-
+    
+      h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5em;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.2em;
+      }
+    
       .qr-block {
-        margin-bottom: 40px;
+        margin-bottom: 1.5rem;
         background-color: #fff;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
       }
-
+    
       .qr-block label {
         display: block;
         font-size: 1rem;
-        margin-bottom: 8px;
-        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
       }
-
+    
       .input-group {
         display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
+        gap: 0.5rem;
+        flex-wrap: wrap;
       }
-
+    
       input[type="text"] {
-        flex: 1;
-        padding: 8px;
+        flex: 1 1 auto;
+        padding: 0.6rem;
         font-size: 1rem;
         border: 1px solid #ccc;
-        border-radius: 4px;
+        border-radius: 6px;
       }
-
+    
       button {
-        padding: 8px 12px;
+        padding: 0.6rem 1rem;
         font-size: 1rem;
+        font-weight: 500;
         background-color: #1976d2;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
       }
-
-      button:hover {
+    
+      button:hover:not(:disabled) {
         background-color: #1565c0;
       }
-
+    
+      button:disabled {
+        background-color: #b0b0b0;
+        cursor: not-allowed;
+      }
+    
       #qr-reader-order,
       #qr-reader-location {
         width: 100%;
-        max-width: 320px;
-        margin: 0 auto;
+        max-width: 300px;
+        margin: 0.5rem auto 0;
       }
-
+    
       #result {
         text-align: center;
-        margin-top: 30px;
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+    
+      /* 詳細表示エリア */
+      #order-details {
+        margin-top: 2rem;
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+      }
+    
+      .details-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+    
+      @media (min-width: 600px) {
+        .details-container {
+          flex-direction: row;
+        }
+      }
+    
+      #order-info, #location-info {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.95rem;
+      }
+    
+      #order-info li, #location-info li {
+        margin-bottom: 0.5em;
+      }
+    
+      #order-details > div {
+        position: relative;
+        z-index: 1;
+      }
+    
+      #match-result {
+        text-align: center;
+        font-size: 1.1rem;
+        margin-top: 1rem;
+        padding: 0.5rem;
+        border-radius: 6px;
       }
     </style>
   </head>
@@ -91,7 +158,8 @@
     </div>
 
     <div id="result">
-      <button onclick="validateLocation()">照合</button>
+      <button onclick="validate()">照合</button>
+      <button id="shipping-btn" onclick="shipping()" disabled>出荷</button>
     </div>
 
       <!-- 注文 & 置場 詳細表示エリア -->
@@ -109,9 +177,40 @@
           <ul id="location-info"></ul>
         </div>
       </div>
+      <!-- 判定結果表示 -->
+      <div id="match-result" style="margin-top: 1em; padding: 1em; font-weight: bold; display: none;"></div>
     </div>
 
     <script>
+      const orderData = {
+        'CODE-12345678': {
+          製品名: '普通品1',
+          重量: '120Ton',
+          出荷日: '2025年5月15日',
+          トラックナンバー: '8888'
+        },
+        'CODE-13579246': {
+          製品名: '特注品A',
+          重量: '80Ton',
+          出荷日: '2025年6月1日',
+          トラックナンバー: '7777'
+        }
+      };
+    
+      const locationData = {
+        'LOC-028': {
+          場所: '第3倉庫・北エリア',
+          製品: '普通品1',
+          在庫: '200Ton',
+          備考: ''
+        },
+        'LOC-027': {
+          場所: '第2倉庫・南エリア',
+          製品: '特注品A',
+          在庫: '50Ton',
+          備考: '優先出荷'
+        }
+      };
       let scanners = {};
 
       function startScan(type) {
@@ -148,35 +247,59 @@
         });
       }
 
-      function validateLocation() {
-        const location = document.getElementById('location-number').value.trim().toLowerCase();
-        const orderNumber = document.getElementById('order-number').value.trim();
+      function validate() {
+        const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
+        const locNo = document.getElementById('location-number').value.trim().toUpperCase();
         const detailsDiv = document.getElementById('order-details');
         const orderInfo = document.getElementById('order-info');
         const locationInfo = document.getElementById('location-info');
+        const resultBox = document.getElementById('match-result');
+        const shippingBtn = document.getElementById('shipping-btn');
     
-        if (location === 'loc-028') {
-          orderInfo.innerHTML = `
-            <li><strong>注文番号:</strong> ${orderNumber || '未入力'}</li>
-            <li><strong>製品名:</strong> 普通品1</li>
-            <li><strong>重量:</strong> 120Ton</li>
-            <li><strong>出荷日:</strong> 2025年5月15日</li>
-            <li><strong>トラックナンバー:</strong> 8888</li>
-          `;
+        const order = orderData[orderNo];
+        const location = locationData[locNo];
     
-          locationInfo.innerHTML = `
-            <li><strong>置場番号:</strong> LOC-028</li>
-            <li><strong>場所:</strong> 第3倉庫・北エリア</li>
-            <li><strong>製品:</strong> 普通品1</li>
-            <li><strong>在庫:</strong> 200Ton</li>
-            <li><strong>備考:</strong> </li>
-          `;
-        } else {
-          orderInfo.innerHTML = `<li>この置場番号には対応していません。</li>`;
-          locationInfo.innerHTML = "";
+        if (!order || !location) {
+          alert('注文番号または置場番号が無効です');
+          detailsDiv.style.display = 'none';
+          resultBox.style.display = 'none';
+          return;
         }
     
+        orderInfo.innerHTML = `
+          <li><strong>注文番号:</strong> ${orderNo}</li>
+          <li><strong>製品名:</strong> ${order.製品名}</li>
+          <li><strong>重量:</strong> ${order.重量}</li>
+          <li><strong>出荷日:</strong> ${order.出荷日}</li>
+          <li><strong>トラックナンバー:</strong> ${order.トラックナンバー}</li>
+        `;
+    
+        locationInfo.innerHTML = `
+          <li><strong>置場番号:</strong> ${locNo}</li>
+          <li><strong>場所:</strong> ${location.場所}</li>
+          <li><strong>製品:</strong> ${location.製品}</li>
+          <li><strong>在庫:</strong> ${location.在庫}</li>
+          <li><strong>備考:</strong> ${location.備考 || '-'}</li>
+        `;
+    
         detailsDiv.style.display = 'block';
+        resultBox.style.display = 'block';
+    
+        // 对比产品名
+        if (order.製品名 === location.製品) {
+          resultBox.textContent = '✔ 製品名一致しています';
+          resultBox.style.backgroundColor = '#d4f5d4';  // 淡绿色
+          resultBox.style.color = '#006600';
+          shippingBtn.disabled = false;
+        } else {
+          resultBox.textContent = '✘ 製品名が一致しません';
+          resultBox.style.backgroundColor = '#f8d7da';  // 淡红色
+          resultBox.style.color = '#990000';
+          shippingBtn.disabled = true;
+        }
+      }
+      function shipping() {
+        alert("出荷処理を実行しました！");
       }
     </script>
   </body>
