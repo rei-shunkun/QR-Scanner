@@ -298,10 +298,12 @@
         qrReader.start(
           { deviceId: { exact: selectedCameraId } },
           {
-            fps: 30,
-            qrbox: 50,
+            fps: 10,
             aspectRatio: 1.77,
             disableFlip: true,
+            experimentalFeatures: {
+              useBarCodeDetectorIfSupported: true
+            },
             videoConstraints: {
               deviceId: { exact: selectedCameraId },
               width: { ideal: 4096 }, 
