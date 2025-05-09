@@ -310,7 +310,7 @@
               focusMode: "continuous",
               advanced: [{ focusMode: "continuous" }, { zoom: 3.0 }]
             },
-            qrbox: { width: 150, height: 150, x: 100, y: 100 }  // 初始识别框位置和大小
+            qrbox: { width: 150, height: 150, x: 100, y: 100 } // 初始识别框位置和大小
           },
           (decodedText) => {
             if (!canScan) return;
@@ -336,15 +336,16 @@
           console.error(err);
         });
       
-        // 监听点击事件，获取点击区域
+        // 初始化扫码区域
         const videoElement = document.getElementById(readerId);
         const qrboxElement = document.createElement('div');
         qrboxElement.style.position = 'absolute';
-        qrboxElement.style.border = '2px dashed red';
-        qrboxElement.style.left = '100px';  // 初始x坐标
-        qrboxElement.style.top = '100px';   // 初始y坐标
-        qrboxElement.style.width = '150px'; // 初始宽度
-        qrboxElement.style.height = '150px'; // 初始高度
+        qrboxElement.style.border = '2px dashed transparent';  // 取消红色框
+        qrboxElement.style.left = '100px';
+        qrboxElement.style.top = '100px';
+        qrboxElement.style.width = '150px';
+        qrboxElement.style.height = '150px';
+        qrboxElement.style.pointerEvents = 'none'; // 使识别框不可点击
         videoElement.style.position = 'relative';
         videoElement.appendChild(qrboxElement);
       
@@ -441,6 +442,8 @@
           });
         });
       }
+      
+
       function validate() {
         const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
         const locNo = document.getElementById('location-number').value.trim().toUpperCase();
