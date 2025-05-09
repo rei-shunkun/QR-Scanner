@@ -218,7 +218,7 @@
       <div id="match-result"></div>
     </div>
     <select id="cameraSelect"></select>
-    <button id="startCamera" onclick="startCamera(document.getElementById('cameraSelect').value)">カメラ起動</button>
+    <button id="startCamera" onclick="setId(document.getElementById('cameraSelect').value)">カメラ起動</button>
     <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
     <script>
       const orderData = {
@@ -283,7 +283,10 @@
         video.srcObject = stream;
       }
       initCameraList();
-
+      
+      function setId(id) {
+        const selectedCameraId = id;
+      }
 
 
 
