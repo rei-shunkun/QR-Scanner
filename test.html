@@ -267,15 +267,14 @@
 
       initCameraList();
 
-      function setId(id) {
-        const selectedCameraId = id;
-      }
 
 
 
       let scanners = {};
 
-      function startScan(type) {
+      async function startScan(type) {
+        const selectedCameraId = document.getElementById("cameraSelect").value;
+
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
 
@@ -298,13 +297,17 @@
 
         qrReader.start(
           { deviceId: { exact: selectedCameraId } },
-          { fps: 30, qrbox: 250 },
+          {
+            fps: 30,
+            qrbox: 250,
+            aspectRatio: 1.0,
+            disableFlip: true
+          },
           (decodedText) => {
             if (!canScan) return;
 
             document.getElementById(inputId).value = decodedText;
 
-            // 扫描成功动画
             const container = document.getElementById(readerId).closest('.qr-container');
             container.classList.add('scan-success');
             setTimeout(() => {
@@ -317,7 +320,7 @@
             });
           },
           (errorMessage) => {
-            // 读取失败忽略
+            // 可忽略的错误
           }
         ).catch(err => {
           alert("カメラにアクセスできませんでした。");
