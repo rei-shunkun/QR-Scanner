@@ -220,8 +220,6 @@
     <select id="cameraSelect"></select>
     <button id="startCamera" onclick="startCamera(document.getElementById('cameraSelect').value)">カメラ起動</button>
     <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
-    <div id="cameraInfoContainer"></div>
-    <div id="logContainer"></div>
     <script>
       const orderData = {
         'CODE-12345678': {
@@ -253,36 +251,6 @@
         }
       };
 
-      async function displayVideoDevices() {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        
-        const container = document.getElementById('cameraInfoContainer');
-        container.innerHTML = ''; // 清空之前的内容
-  
-        if (videoDevices.length === 0) {
-          container.innerHTML = '<p>No video input devices found.</p>';
-          return;
-        }
-  
-        // 遍历所有视频设备并显示其信息
-        videoDevices.forEach((device, index) => {
-          console.log(device);
-          const deviceInfo = `
-            <div style="margin-bottom: 10px;">
-              <strong>Device ${index + 1}:</strong><br>
-              <strong>Label:</strong> ${device.label || 'Unknown'}<br>
-              <strong>Device ID:</strong> ${device.deviceId}<br>
-              <strong>Kind:</strong> ${device.kind}<br>
-              <strong>Group ID:</strong> ${device.groupId}<br>
-            </div>
-          `;
-          container.innerHTML += deviceInfo;
-        });
-      }
-  
-      // 调用函数显示视频设备信息
-      displayVideoDevices();
 
       async function initCameraList() {
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -343,7 +311,7 @@
         }, 1000);
 
         qrReader.start(
-          { facingMode: "environment" },
+          { deviceId: { exact: selectedCameraId } },
           { fps: 30, qrbox: 250 },
           (decodedText) => {
             if (!canScan) return;
