@@ -274,10 +274,9 @@
 
       async function startScan(type) {
         const selectedCameraId = document.getElementById("cameraSelect").value;
-
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
-
+      
         if (scanners[type]) {
           scanners[type].stop().then(() => {
             document.getElementById(readerId).innerHTML = "";
@@ -286,15 +285,15 @@
           });
           return;
         }
-
+      
         const qrReader = new Html5Qrcode(readerId);
         scanners[type] = qrReader;
-
+      
         let canScan = false;
         setTimeout(() => {
           canScan = true;
         }, 1000);
-
+      
         qrReader.start(
           { deviceId: { exact: selectedCameraId } },
           {
@@ -306,7 +305,7 @@
             },
             videoConstraints: {
               deviceId: { exact: selectedCameraId },
-              width: { ideal: 4096 }, 
+              width: { ideal: 4096 },
               height: { ideal: 3112 },
               focusMode: "continuous",
               advanced: [{ focusMode: "continuous" }, { zoom: 3.0 }]
@@ -314,15 +313,15 @@
           },
           (decodedText) => {
             if (!canScan) return;
-
+      
             document.getElementById(inputId).value = decodedText;
-
+      
             const container = document.getElementById(readerId).closest('.qr-container');
             container.classList.add('scan-success');
             setTimeout(() => {
               container.classList.remove('scan-success');
             }, 500);
-
+      
             qrReader.stop().then(() => {
               scanners[type] = null;
               document.getElementById(readerId).innerHTML = "";
@@ -334,6 +333,62 @@
         ).catch(err => {
           alert("カメラにアクセスできませんでした。");
           console.error(err);
+        });
+      
+        // 监听点击事件，获取点击区域
+        const videoElement = document.getElementById(readerId);
+        videoElement.addEventListener('click', (event) => {
+          const rect = videoElement.getBoundingClientRect();
+          const clickX = event.clientX - rect.left;
+          const clickY = event.clientY - rect.top;
+      
+          // 计算点击区域的坐标范围 (假设选中区域为 150x150 像素)
+          const regionSize = 150; 
+          const regionX = Math.max(0, clickX - regionSize / 2);
+          const regionY = Math.max(0, clickY - regionSize / 2);
+      
+          // 设置新的扫描区域
+          qrReader.stop().then(() => {
+            qrReader.start(
+              { deviceId: { exact: selectedCameraId } },
+              {
+                fps: 10,
+                aspectRatio: 1.77,
+                disableFlip: true,
+                experimentalFeatures: {
+                  useBarCodeDetectorIfSupported: true
+                },
+                videoConstraints: {
+                  deviceId: { exact: selectedCameraId },
+                  width: { ideal: 4096 },
+                  height: { ideal: 3112 },
+                  focusMode: "continuous",
+                  advanced: [{ focusMode: "continuous" }, { zoom: 3.0 }]
+                },
+                // 设定放大后的扫描区域
+                qrbox: { width: regionSize, height: regionSize, x: regionX, y: regionY }
+              },
+              (decodedText) => {
+                if (!canScan) return;
+      
+                document.getElementById(inputId).value = decodedText;
+      
+                const container = document.getElementById(readerId).closest('.qr-container');
+                container.classList.add('scan-success');
+                setTimeout(() => {
+                  container.classList.remove('scan-success');
+                }, 500);
+      
+                qrReader.stop().then(() => {
+                  scanners[type] = null;
+                  document.getElementById(readerId).innerHTML = "";
+                });
+              },
+              (errorMessage) => {
+                // 可忽略的错误
+              }
+            );
+          });
         });
       }
 
