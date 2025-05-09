@@ -274,94 +274,59 @@
 
       let scanners = {};
 
-      async function startScan(type) {
+      function startScan(type) {
         const selectedCameraId = document.getElementById("cameraSelect").value;
-
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
-
+      
+        // 先停止已有扫码器
         if (scanners[type]) {
-          scanners[type].stop().then(() => {
+          scanners[type].clear().then(() => {
             document.getElementById(readerId).innerHTML = "";
             scanners[type] = null;
-            startScan(type);
+            startScan(type); // 重新启动
           });
           return;
         }
-
-        const qrReader = new Html5Qrcode(readerId);
-        scanners[type] = qrReader;
-
-        let canScan = false;
-        setTimeout(() => {
-          canScan = true;
-        }, 1000);
-
-        qrReader.start(
-          { deviceId: { exact: selectedCameraId } },
-          {
-            fps: 10,
-            qrbox: 50,
-            aspectRatio: 1.77,
-            disableFlip: true,
-            showTorchButtonIfSupported: true,
-            showZoomSliderIfSupported: true,
-            defaultZoomValueIfSupported: 8,
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true
-            },
-            videoConstraints: {
-              deviceId: { exact: selectedCameraId },
-              width: { ideal: 4096 }, 
-              height: { ideal: 3112 },
-              focusMode: "continuous",
-              advanced: [{ focusMode: "continuous" }, { zoom: 8.0 }]
-            }
-          },
+      
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          rememberLastUsedCamera: false,
+          aspectRatio: 1.777,
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+          videoConstraints: {
+            deviceId: { exact: selectedCameraId },
+            width: { ideal: 4096 },
+            height: { ideal: 3112 },
+            focusMode: "continuous",
+            advanced: [{ zoom: 8 }]
+          }
+        };
+      
+        const qrScanner = new Html5QrcodeScanner(readerId, config, false);
+        scanners[type] = qrScanner;
+      
+        qrScanner.render(
           (decodedText) => {
-            if (!canScan) return;
-
             document.getElementById(inputId).value = decodedText;
-
+            validate();
+      
             const container = document.getElementById(readerId).closest('.qr-container');
-            container.classList.add('scan-success');
-            setTimeout(() => {
-              container.classList.remove('scan-success');
-            }, 500);
-
-            qrReader.stop().then(() => {
-              scanners[type] = null;
+            if (container) {
+              container.classList.add('scan-success');
+              setTimeout(() => container.classList.remove('scan-success'), 500);
+            }
+      
+            qrScanner.clear().then(() => {
               document.getElementById(readerId).innerHTML = "";
+              scanners[type] = null;
             });
           },
-          (errorMessage) => {
-            // 可忽略的错误
+          (error) => {
+            // console.warn("scan error", error);
           }
-        ).then(() => {
-          // ✅ 摄像头已启动，尝试设置 zoom
-          const videoTrack = qrReader.getRunningTrack?.();
-          if (videoTrack) {
-            const capabilities = videoTrack.getCapabilities?.();
-            if (capabilities && capabilities.zoom) {
-              const desiredZoom = 8;
-              const clampedZoom = Math.max(
-                capabilities.zoom.min,
-                Math.min(desiredZoom, capabilities.zoom.max)
-              );
-        
-              videoTrack.applyConstraints({
-                advanced: [{ zoom: clampedZoom }]
-              }).catch(err => {
-                console.warn("Zoom apply failed:", err);
-              });
-            } else {
-              console.warn("Zoom not supported on this device.");
-            }
-          }
-        }).catch(err => {
-          alert("カメラにアクセスできませんでした。");
-          console.error(err);
-        });
+        );
       }
 
       function validate() {
