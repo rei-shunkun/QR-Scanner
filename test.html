@@ -279,6 +279,12 @@
             if (!canScan) return;
 
             document.getElementById(inputId).value = decodedText;
+            setTimeout(function () {
+              qrReader.applyVideoConstraints({
+                focusMode: "continuous",
+                advanced: [{ zoom: 2.0 }],
+              });
+            }, 500);
 
             // 扫描成功动画
             const container = document.getElementById(readerId).closest('.qr-container');
