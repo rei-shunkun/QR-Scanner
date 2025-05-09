@@ -273,18 +273,8 @@
         }, 1000);
 
         qrReader.start(
-          {
-            facingMode: "environment", 
-            width: { ideal: 4096 },   
-            height: { ideal: 2160 }
-          },
-          {
-            fps: 60,                   
-            qrbox: 400,              
-            aspectRatio: 1.78,    
-            disableFlip: true,
-            rememberLastUsedCamera: true
-          },
+          { facingMode: "environment" },
+          { fps: 30, qrbox: 250 },
           (decodedText) => {
             if (!canScan) return;
 
