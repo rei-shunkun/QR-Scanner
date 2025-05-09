@@ -301,7 +301,14 @@
             fps: 30,
             qrbox: 250,
             aspectRatio: 1.0,
-            disableFlip: true
+            disableFlip: true,
+            videoConstraints: {
+              deviceId: { exact: selectedCameraId },
+              width: { ideal: 4096 }, 
+              height: { ideal: 3112 },
+              focusMode: "continuous",
+              advanced: [{ focusMode: "continuous" }, { zoom: 2.0 }]
+            }
           },
           (decodedText) => {
             if (!canScan) return;
