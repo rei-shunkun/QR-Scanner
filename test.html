@@ -217,7 +217,8 @@
       </div>
       <div id="match-result"></div>
     </div>
-
+    <select id="cameraSelect"></select>
+    <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
     <script>
       const orderData = {
         'CODE-12345678': {
@@ -249,6 +250,39 @@
         }
       };
 
+      async function initCameraList() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    
+        const select = document.getElementById('cameraSelect');
+        videoDevices.forEach((device, index) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${index + 1}`;
+          select.appendChild(option);
+        });
+    
+        select.onchange = () => startCamera(select.value);
+        if (videoDevices.length > 0) {
+          startCamera(videoDevices[0].deviceId); // 默认打开第一个摄像头
+        }
+      }
+
+      async function startCamera(deviceId) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            deviceId: { exact: deviceId },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        });
+    
+        const video = document.getElementById('preview');
+        video.srcObject = stream;
+      }
+    
+      initCameraList();
+
       let scanners = {};
 
       function startScan(type) {
@@ -279,12 +313,6 @@
             if (!canScan) return;
 
             document.getElementById(inputId).value = decodedText;
-            setTimeout(function () {
-              qrReader.applyVideoConstraints({
-                focusMode: "continuous",
-                advanced: [{ zoom: 2.0 }],
-              });
-            }, 500);
 
             // 扫描成功动画
             const container = document.getElementById(readerId).closest('.qr-container');
