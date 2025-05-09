@@ -220,6 +220,8 @@
     <select id="cameraSelect"></select>
     <button id="startCamera" onclick="startCamera(document.getElementById('cameraSelect').value)">カメラ起動</button>
     <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
+    <div id="cameraInfoContainer"></div>
+    <div id="logContainer"></div>
     <script>
       const orderData = {
         'CODE-12345678': {
@@ -251,38 +253,37 @@
         }
       };
 
-      async function initCameraList() {
+      async function displayVideoDevices() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    
-        const select = document.getElementById('cameraSelect');
-        videoDevices.forEach((device, index) => {
-          const option = document.createElement('option');
-          option.value = device.deviceId;
-          option.text = device.label || `Camera ${index + 1}`;
-          select.appendChild(option);
-        });
-    
-        select.onchange = () => startCamera(select.value);
-        if (videoDevices.length > 0) {
-          startCamera(videoDevices[0].deviceId); // 默认打开第一个摄像头
+        
+        const container = document.getElementById('cameraInfoContainer');
+        container.innerHTML = ''; // 清空之前的内容
+  
+        if (videoDevices.length === 0) {
+          container.innerHTML = '<p>No video input devices found.</p>';
+          return;
         }
-      }
-
-      async function startCamera(deviceId) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            deviceId: { exact: deviceId },
-            width: { ideal: 4096 },
-            height: { ideal: 3112 }
-          }
+  
+        // 遍历所有视频设备并显示其信息
+        videoDevices.forEach((device, index) => {
+          console.log(device);
+          const deviceInfo = `
+            <div style="margin-bottom: 10px;">
+              <strong>Device ${index + 1}:</strong><br>
+              <strong>Label:</strong> ${device.label || 'Unknown'}<br>
+              <strong>Device ID:</strong> ${device.deviceId}<br>
+              <strong>Kind:</strong> ${device.kind}<br>
+              <strong>Group ID:</strong> ${device.groupId}<br>
+            </div>
+          `;
+          container.innerHTML += deviceInfo;
         });
-    
-        const video = document.getElementById('preview');
-        video.srcObject = stream;
       }
-    
-      initCameraList();
+  
+      // 调用函数显示视频设备信息
+      displayVideoDevices();
+
 
       let scanners = {};
 
