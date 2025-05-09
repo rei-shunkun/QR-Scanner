@@ -213,33 +213,36 @@
       };
       let scanners = {};
 
-      function startScan(type) {
+      async function startScan(type) {
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
-
+      
         if (scanners[type]) {
-          scanners[type].stop().then(() => {
-            document.getElementById(readerId).innerHTML = "";
-            scanners[type] = null;
-            startScan(type);
-          });
-          return;
+          await scanners[type].stop();
+          document.getElementById(readerId).innerHTML = "";
+          scanners[type] = null;
         }
-
+      
         const qrReader = new Html5Qrcode(readerId);
         scanners[type] = qrReader;
-
+      
+        let hasScanned = false;
+      
         qrReader.start(
           { facingMode: "environment" },
           { fps: 10, qrbox: 250 },
           (decodedText) => {
+            if (hasScanned) return; 
+            hasScanned = true;
+      
             document.getElementById(inputId).value = decodedText;
-            qrReader.stop();
-            scanners[type] = null;
-            document.getElementById(readerId).innerHTML = "";
+            qrReader.stop().then(() => {
+              scanners[type] = null;
+              document.getElementById(readerId).innerHTML = "";
+            });
           },
           (errorMessage) => {
-            // console.warn("読み取り失敗", errorMessage);
+            
           }
         ).catch(err => {
           alert("カメラにアクセスできませんでした。");
