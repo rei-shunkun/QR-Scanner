@@ -218,6 +218,7 @@
       <div id="match-result"></div>
     </div>
     <select id="cameraSelect"></select>
+    <button id="startCamera" onclick="startCamera(document.getElementById('cameraSelect').value)">カメラ起動</button>
     <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
     <script>
       const orderData = {
@@ -272,8 +273,8 @@
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             deviceId: { exact: deviceId },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            width: { ideal: 4096 },
+            height: { ideal: 3112 }
           }
         });
     
