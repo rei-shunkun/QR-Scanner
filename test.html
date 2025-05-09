@@ -337,7 +337,28 @@
           (errorMessage) => {
             // 可忽略的错误
           }
-        ).catch(err => {
+        ).then(() => {
+          // ✅ 摄像头已启动，尝试设置 zoom
+          const videoTrack = qrReader.getRunningTrack?.();
+          if (videoTrack) {
+            const capabilities = videoTrack.getCapabilities?.();
+            if (capabilities && capabilities.zoom) {
+              const desiredZoom = 8;
+              const clampedZoom = Math.max(
+                capabilities.zoom.min,
+                Math.min(desiredZoom, capabilities.zoom.max)
+              );
+        
+              videoTrack.applyConstraints({
+                advanced: [{ zoom: clampedZoom }]
+              }).catch(err => {
+                console.warn("Zoom apply failed:", err);
+              });
+            } else {
+              console.warn("Zoom not supported on this device.");
+            }
+          }
+        }).catch(err => {
           alert("カメラにアクセスできませんでした。");
           console.error(err);
         });
