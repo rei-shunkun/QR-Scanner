@@ -219,7 +219,9 @@
     </div>
     <select id="cameraSelect"></select>
     <button id="startCamera" onclick="setId(document.getElementById('cameraSelect').value)">カメラ起動</button>
-    <video id="preview" autoplay playsinline style="width: 100%; max-width: 480px;"></video>
+    <button onclick="showCameraCapabilities()">显示摄像头能力</button>
+    <pre id="capabilitiesOutput"></pre>
+    
     <script>
       const orderData = {
         'CODE-12345678': {
@@ -392,6 +394,37 @@
       function shipping() {
         alert("出荷処理を実行しました！");
       }
+      async function getCameras() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(d => d.kind === 'videoinput');
+        const select = document.getElementById("cameraSelect");
+        select.innerHTML = "";
+        cameras.forEach(camera => {
+          const option = document.createElement("option");
+          option.value = camera.deviceId;
+          option.text = camera.label || `Camera ${select.length + 1}`;
+          select.appendChild(option);
+        });
+      }
+    
+      async function showCameraCapabilities() {
+        const selectedCameraId = document.getElementById("cameraSelect").value;
+    
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: selectedCameraId } }
+        });
+    
+        const track = stream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities();
+    
+        document.getElementById("capabilitiesOutput").textContent =
+          JSON.stringify(capabilities, null, 2);
+    
+        // 释放摄像头资源
+        track.stop();
+      }
+    
+      getCameras();
     </script>
   </body>
 </html>
