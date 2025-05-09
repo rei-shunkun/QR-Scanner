@@ -309,7 +309,8 @@
               height: { ideal: 3112 },
               focusMode: "continuous",
               advanced: [{ focusMode: "continuous" }, { zoom: 3.0 }]
-            }
+            },
+            qrbox: { width: 150, height: 150, x: 100, y: 100 }  // 初始识别框位置和大小
           },
           (decodedText) => {
             if (!canScan) return;
@@ -337,17 +338,67 @@
       
         // 监听点击事件，获取点击区域
         const videoElement = document.getElementById(readerId);
-        videoElement.addEventListener('click', (event) => {
-          const rect = videoElement.getBoundingClientRect();
-          const clickX = event.clientX - rect.left;
-          const clickY = event.clientY - rect.top;
+        const qrboxElement = document.createElement('div');
+        qrboxElement.style.position = 'absolute';
+        qrboxElement.style.border = '2px dashed red';
+        qrboxElement.style.left = '100px';  // 初始x坐标
+        qrboxElement.style.top = '100px';   // 初始y坐标
+        qrboxElement.style.width = '150px'; // 初始宽度
+        qrboxElement.style.height = '150px'; // 初始高度
+        videoElement.style.position = 'relative';
+        videoElement.appendChild(qrboxElement);
       
-          // 计算点击区域的坐标范围 (假设选中区域为 150x150 像素)
-          const regionSize = 150; 
-          const regionX = Math.max(0, clickX - regionSize / 2);
-          const regionY = Math.max(0, clickY - regionSize / 2);
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight;
       
-          // 设置新的扫描区域
+        // 用户点击并拖动识别框
+        qrboxElement.addEventListener('mousedown', (e) => {
+          // 判断是否是拖动还是调整大小
+          if (e.offsetX > qrboxElement.offsetWidth - 10 && e.offsetY > qrboxElement.offsetHeight - 10) {
+            isResizing = true;  // 开始调整大小
+          } else {
+            isDragging = true;  // 开始拖动
+          }
+      
+          startX = e.clientX;
+          startY = e.clientY;
+          startWidth = qrboxElement.offsetWidth;
+          startHeight = qrboxElement.offsetHeight;
+        });
+      
+        document.addEventListener('mousemove', (e) => {
+          if (isDragging) {
+            // 拖动操作
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            qrboxElement.style.left = `${qrboxElement.offsetLeft + dx}px`;
+            qrboxElement.style.top = `${qrboxElement.offsetTop + dy}px`;
+            startX = e.clientX;
+            startY = e.clientY;
+          } else if (isResizing) {
+            // 调整大小
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            qrboxElement.style.width = `${startWidth + dx}px`;
+            qrboxElement.style.height = `${startHeight + dy}px`;
+          }
+        });
+      
+        document.addEventListener('mouseup', () => {
+          isDragging = false;
+          isResizing = false;
+        });
+      
+        // 更新扫描区域
+        qrboxElement.addEventListener('mouseup', () => {
+          const rect = qrboxElement.getBoundingClientRect();
+          const regionX = rect.left;
+          const regionY = rect.top;
+          const regionWidth = rect.width;
+          const regionHeight = rect.height;
+      
+          // 更新二维码扫描区域
           qrReader.stop().then(() => {
             qrReader.start(
               { deviceId: { exact: selectedCameraId } },
@@ -365,8 +416,7 @@
                   focusMode: "continuous",
                   advanced: [{ focusMode: "continuous" }, { zoom: 3.0 }]
                 },
-                // 设定放大后的扫描区域
-                qrbox: { width: regionSize, height: regionSize, x: regionX, y: regionY }
+                qrbox: { width: regionWidth, height: regionHeight, x: regionX, y: regionY }
               },
               (decodedText) => {
                 if (!canScan) return;
@@ -391,7 +441,6 @@
           });
         });
       }
-
       function validate() {
         const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
         const locNo = document.getElementById('location-number').value.trim().toUpperCase();
