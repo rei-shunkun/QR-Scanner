@@ -254,32 +254,25 @@
       };
 
 
-      async function initCameraList() {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    
-        const select = document.getElementById('cameraSelect');
-        videoDevices.forEach((device, index) => {
-          const option = document.createElement('option');
-          option.value = device.deviceId;
-          option.text = device.label || `Camera ${index + 1}`;
-          select.appendChild(option);
-        });
-      }
-
-      initCameraList();
-
-
-
-
       let scanners = {};
 
-      function startScan(type) {
-        const selectedCameraId = document.getElementById("cameraSelect").value;
+      async function startScan(type) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+
+        // 尝试找到后置摄像头（含 "back" 或 "rear" 字样）
+        const backCamera = videoDevices.find(device =>
+          /back|rear|environment/i.test(device.label)
+        ) || videoDevices[0]; // 找不到就用第一个摄像头作为默认
+
+        if (!backCamera) {
+          alert("未找到摄像头设备");
+          return;
+        }
+
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
-      
-        // 先停止已有扫码器
+
         if (scanners[type]) {
           scanners[type].clear().then(() => {
             document.getElementById(readerId).innerHTML = "";
@@ -288,7 +281,7 @@
           });
           return;
         }
-      
+
         const config = {
           fps: 10,
           qrbox: { width: 250, height: 250 },
@@ -296,28 +289,28 @@
           aspectRatio: 1.777,
           supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
           videoConstraints: {
-            deviceId: { exact: selectedCameraId },
+            deviceId: { exact: backCamera.deviceId },
             width: { ideal: 4096 },
             height: { ideal: 3112 },
             focusMode: "continuous",
             advanced: [{ zoom: 8 }]
           }
         };
-      
+
         const qrScanner = new Html5QrcodeScanner(readerId, config, false);
         scanners[type] = qrScanner;
-      
+
         qrScanner.render(
           (decodedText) => {
             document.getElementById(inputId).value = decodedText;
             validate();
-      
+
             const container = document.getElementById(readerId).closest('.qr-container');
             if (container) {
               container.classList.add('scan-success');
               setTimeout(() => container.classList.remove('scan-success'), 500);
             }
-      
+
             qrScanner.clear().then(() => {
               document.getElementById(readerId).innerHTML = "";
               scanners[type] = null;
@@ -328,6 +321,7 @@
           }
         );
       }
+
 
       function validate() {
         const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
