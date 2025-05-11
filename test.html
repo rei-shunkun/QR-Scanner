@@ -180,6 +180,8 @@
       <div class="input-group">
         <input type="text" id="order-number" />
         <button onclick="startScan('order')">QRスキャン</button>
+        <label><input type="radio" name="zoom-order" value="1" checked> Zoom 1x</label>
+        <label><input type="radio" name="zoom-order" value="8"> Zoom 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-order"></div>
@@ -192,6 +194,8 @@
       <div class="input-group">
         <input type="text" id="location-number" />
         <button onclick="startScan('location')">QRスキャン</button>
+        <label><input type="radio" name="zoom-location" value="1" checked> Zoom 1x</label>
+        <label><input type="radio" name="zoom-location" value="8"> Zoom 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-location"></div>
@@ -262,7 +266,7 @@
         ) || videoDevices[0];
       
         if (!backCamera) {
-          alert("未找到摄像头设备");
+          alert("NO CAMERA DETECTED");
           return;
         }
       
@@ -275,7 +279,8 @@
           document.getElementById(readerId).innerHTML = "";
           scanners[type] = null;
         }
-      
+        const zoomValue = parseFloat(document.querySelector(`input[name="${zoomRadioName}"]:checked`)?.value || "1");
+
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
       
@@ -288,7 +293,7 @@
             width: { ideal: 4096 },
             height: { ideal: 3112 },
             focusMode: "continuous",
-            advanced: [{ zoom: 8 }]
+            advanced: [{ zoom: zoomValue }]
           }
         };
       
