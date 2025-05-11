@@ -279,6 +279,7 @@
           document.getElementById(readerId).innerHTML = "";
           scanners[type] = null;
         }
+        const zoomRadioName = `zoom-${type}`;
         const zoomValue = parseFloat(document.querySelector(`input[name="${zoomRadioName}"]:checked`)?.value || "1");
 
         const qrScanner = new Html5Qrcode(readerId);
