@@ -261,9 +261,10 @@
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
       
-        const backCamera = videoDevices.find(device =>
+        <!-- const backCamera = videoDevices.find(device =>
           /back|rear|environment/i.test(device.label)
-        ) || videoDevices[0];
+        ) || videoDevices[0]; -->
+        const backCamera = videoDevices[3]
       
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
