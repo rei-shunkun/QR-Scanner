@@ -253,6 +253,42 @@
           備考: '優先出荷'
         }
       };
+      async function selectBestBackCamera(videoDevices) {
+        const envCameras = videoDevices.filter(device =>
+          /environment/i.test(device.label)
+        );
+      
+        if (envCameras.length === 1) return envCameras[0];
+        if (envCameras.length === 0) return videoDevices[0]; // fallback
+      
+        // 检查哪个 environment 摄像头分辨率高
+        let bestCamera = null;
+        let bestHeight = 0;
+      
+        for (const device of envCameras) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: device.deviceId
+              }
+            });
+      
+            const track = stream.getVideoTracks()[0];
+            const settings = track.getSettings();
+      
+            if (settings.height > bestHeight) {
+              bestHeight = settings.height;
+              bestCamera = device;
+            }
+      
+            track.stop(); // 停止预览流，避免占用摄像头
+          } catch (e) {
+            console.warn("Failed to get stream for device", device.label, e);
+          }
+        }
+      
+        return bestCamera || envCameras[0]; // fallback
+      }
 
 
       let scanners = {};
@@ -264,7 +300,8 @@
         <!-- const backCamera = videoDevices.find(device =>
           /back|rear|environment/i.test(device.label)
         ) || videoDevices[0]; -->
-        const backCamera = videoDevices[3]
+
+        const backCamera = await selectBestBackCamera(videoDevices);
       
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
@@ -280,7 +317,6 @@
           document.getElementById(readerId).innerHTML = "";
           scanners[type] = null;
         }
-        const zoomRadioName = `zoom-${type}`;
         const zoomValue = parseFloat(document.querySelector(`input[name="${zoomRadioName}"]:checked`)?.value || "1");
 
         const qrScanner = new Html5Qrcode(readerId);
