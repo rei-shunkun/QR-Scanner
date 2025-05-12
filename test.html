@@ -254,7 +254,9 @@
         }
       };
       async function selectBestBackCamera(videoDevices) {
-        const envCameras = videoDevices;
+        const envCameras = videoDevices.filter(device =>
+          /back|rear|environment/i.test(device.label)
+        );
       
         if (envCameras.length === 1) return envCameras[0];
         if (envCameras.length === 0) return videoDevices[0]; // fallback
@@ -298,7 +300,7 @@
           /back|rear|environment/i.test(device.label)
         )
 
-        const backCamera = await selectBestBackCamera(backCameraList);
+        const backCamera = await selectBestBackCamera(videoDevices);
       
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
