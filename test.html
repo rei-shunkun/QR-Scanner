@@ -255,6 +255,23 @@
         }
       };
 
+      function deepPrint(obj) {
+        if (typeof obj !== 'object' || obj === null) {
+          return obj;
+        }
+        
+        let result = "<ul>";
+        for (const [key, value] of Object.entries(obj)) {
+          if (typeof value === 'object') {
+            result += `<li><strong>${key}</strong>: ${deepPrint(value)}</li>`;
+          } else {
+            result += `<li><strong>${key}</strong>: ${value}</li>`;
+          }
+        }
+        result += "</ul>";
+        return result;
+      }
+      
       async function showCameraDetails() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
@@ -274,17 +291,8 @@
             const track = stream.getVideoTracks()[0];
             const capabilities = track.getCapabilities();
       
-            // 将 capabilities 中的所有项格式化为 HTML 列表
-            const otherCapabilities = Object.entries(capabilities)
-              .map(([key, val]) => {
-                if (Array.isArray(val)) {
-                  return `<li><strong>${key}</strong>: [${val.join(", ")}]</li>`;
-                }
-                return `<li><strong>${key}</strong>: ${val}</li>`;
-              })
-              .join("");
-      
-            capabilitiesInfo = `<ul>${otherCapabilities}</ul>`;
+            // 使用递归函数展开 capabilities 对象
+            capabilitiesInfo = deepPrint(capabilities);
       
             track.stop(); // 关闭摄像头
           } catch (e) {
