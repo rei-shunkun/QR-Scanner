@@ -265,7 +265,11 @@
           let settingsInfo = "";
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
-              video: { deviceId: device.deviceId }
+              video: {
+                deviceId: { exact: device.deviceId },
+                width: { ideal: 8000 },
+                height: { ideal: 4000 }
+              }
             });
             const track = stream.getVideoTracks()[0];
             const settings = track.getSettings();
