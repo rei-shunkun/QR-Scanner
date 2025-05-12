@@ -334,7 +334,7 @@
             const track = stream.getVideoTracks()[0];
             const settings = track.getSettings();
       
-            if (settings.height == 3024) {
+            if (settings.height == 3060) {
               bestHeight = settings.height;
               bestCamera = device;
             }
@@ -389,7 +389,7 @@
             width: { ideal: 8000 },
             height: { ideal: 4000 },
             focusMode: "continuous",
-            advanced: [{ zoom: 8 }]
+            advanced: [{ zoom: zoomValue }]
           }
         };
       
