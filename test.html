@@ -223,7 +223,7 @@
       </div>
       <div id="match-result"></div>
     </div>
-
+ 
     
     <script>
       const orderData = {
@@ -255,6 +255,46 @@
           備考: '優先出荷'
         }
       };
+
+      async function selectBestBackCamera(videoDevices) {
+        const envCameras = videoDevices.filter(device =>
+          /back|rear|environment/i.test(device.label)
+        );
+      
+        if (envCameras.length === 1) return envCameras[0];
+        if (envCameras.length === 0) return videoDevices[0]; // fallback
+      
+        // 检查哪个 environment 摄像头分辨率高
+        let bestCamera = null;
+        let bestHeight = 0;
+      
+        for (const device of envCameras) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: { exact: device.deviceId },
+                width: { ideal: 8000 },
+                height: { ideal: 4000 }
+              }
+            });
+      
+            const track = stream.getVideoTracks()[0];
+            const settings = track.getSettings();
+      
+            if (settings.height > bestHeight) {
+              bestHeight = settings.height;
+              bestCamera = device;
+            }
+      
+            track.stop(); // 停止预览流，避免占用摄像头
+          } catch (e) {
+            console.warn("Failed to get stream for device", device.label, e);
+          }
+        }
+      
+        return bestCamera || envCameras[0]; // fallback
+      }
+
 
       let scanners = {};
 
