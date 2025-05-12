@@ -334,7 +334,7 @@
             const track = stream.getVideoTracks()[0];
             const settings = track.getSettings();
       
-            if (settings.height > bestHeight) {
+            if (settings.height == 3024) {
               bestHeight = settings.height;
               bestCamera = device;
             }
