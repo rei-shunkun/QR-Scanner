@@ -273,12 +273,10 @@
         result += "</ul>";
         return result;
       }
-     /* 
+
       async function showCameraDetails() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        const infoDiv = document.getElementById("camera-info");
-        infoDiv.innerHTML = "<h4>検出されたカメラ詳細:</h4>";
       
         for (const device of videoDevices) {
           let capabilitiesInfo = "";
@@ -300,18 +298,11 @@
           } catch (e) {
             capabilitiesInfo = `<div style="color: red;">⚠️ カメラアクセス失敗: ${e.message}</div>`;
           }
-      
-          infoDiv.innerHTML += `
-            <div style="margin-bottom: 1em; border-bottom: 1px dashed #aaa;">
-              <strong>カメラ名:</strong> ${device.label || "(ラベルなし)"}<br/>
-              <strong>ID:</strong> ${device.deviceId}<br/>
-              ${capabilitiesInfo}
-            </div>
-          `;
         }
       }
-      showCameraDetails();
-      */
+
+
+
       async function selectBestBackCamera(videoDevices) {
         const envCameras = videoDevices.filter(device =>
           /back|rear|environment/i.test(device.label)
@@ -389,7 +380,7 @@
         </div>
       `;
         
-        
+        showCameraDetails();
         
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
