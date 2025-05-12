@@ -262,7 +262,7 @@
         infoDiv.innerHTML = "<h4>検出されたカメラ詳細:</h4>";
       
         for (const device of videoDevices) {
-          let settingsInfo = "";
+          let capabilitiesInfo = "";
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
               video: {
@@ -272,26 +272,30 @@
               }
             });
             const track = stream.getVideoTracks()[0];
-            const settings = track.getSettings();
+            const capabilities = track.getCapabilities();
       
-            // 除去 label 和 deviceId
-            const otherSettings = Object.entries(settings)
-              .filter(([key]) => key !== 'label' && key !== 'deviceId')
-              .map(([key, val]) => `<li><strong>${key}</strong>: ${val}</li>`)
+            // 将 capabilities 中的所有项格式化为 HTML 列表
+            const otherCapabilities = Object.entries(capabilities)
+              .map(([key, val]) => {
+                if (Array.isArray(val)) {
+                  return `<li><strong>${key}</strong>: [${val.join(", ")}]</li>`;
+                }
+                return `<li><strong>${key}</strong>: ${val}</li>`;
+              })
               .join("");
       
-            settingsInfo = `<ul>${otherSettings}</ul>`;
+            capabilitiesInfo = `<ul>${otherCapabilities}</ul>`;
       
             track.stop(); // 关闭摄像头
           } catch (e) {
-            settingsInfo = `<div style="color: red;">⚠️ カメラアクセス失敗: ${e.message}</div>`;
+            capabilitiesInfo = `<div style="color: red;">⚠️ カメラアクセス失敗: ${e.message}</div>`;
           }
       
           infoDiv.innerHTML += `
             <div style="margin-bottom: 1em; border-bottom: 1px dashed #aaa;">
               <strong>カメラ名:</strong> ${device.label || "(ラベルなし)"}<br/>
               <strong>ID:</strong> ${device.deviceId}<br/>
-              ${settingsInfo}
+              ${capabilitiesInfo}
             </div>
           `;
         }
