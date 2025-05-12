@@ -313,7 +313,9 @@
           try {
             const stream = await navigator.mediaDevices.getUserMedia({
               video: {
-                deviceId: device.deviceId
+                deviceId: { exact: device.deviceId },
+                width: { ideal: 8000 },
+                height: { ideal: 4000 }
               }
             });
       
