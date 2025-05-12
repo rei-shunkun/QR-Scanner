@@ -223,6 +223,9 @@
       </div>
       <div id="match-result"></div>
     </div>
+    <div style="display:none">
+      <div id="hidden-scanner"></div>
+    </div>
  
     
     <script>
@@ -254,6 +257,37 @@
           在庫: '50Ton',
         }
       };
+      // 在页面加载时运行
+      window.addEventListener("DOMContentLoaded", async () => {
+        const hiddenScanner = new Html5Qrcode("hidden-scanner");
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const backCamera = await selectBestBackCamera(videoDevices);
+        const config = {
+          fps: 1, // 最低帧率，减少资源占用
+          qrbox: { width: 50, height: 50 },
+          aspectRatio: 1.777,
+          videoConstraints: {
+            deviceId: { exact: backCamera.deviceId },
+            width: { ideal: 8000 },
+            height: { ideal: 4000 },
+            focusMode: "continuous",
+            advanced: [{ zoom: 8 }] // 尽量激活长焦摄像头
+          }
+        };
+
+        try {
+          await hiddenScanner.start(
+            config.videoConstraints,
+            config,
+            () => {}, // 不处理扫码结果
+            () => {}
+          );
+        } catch (err) {
+          console.warn("隐式扫描器启动失败:", err);
+        }
+      });
 
 
       async function selectBestBackCamera(videoDevices) {
