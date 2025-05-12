@@ -254,9 +254,7 @@
         }
       };
       async function selectBestBackCamera(videoDevices) {
-        const envCameras = videoDevices.filter(device =>
-          /environment/i.test(device.label)
-        );
+        const envCameras = videoDevices;
       
         if (envCameras.length === 1) return envCameras[0];
         if (envCameras.length === 0) return videoDevices[0]; // fallback
@@ -296,13 +294,11 @@
       async function startScan(type) {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      /*
-        const backCamera = videoDevices.find(device =>
+        const backCameraList = videoDevices.find(device =>
           /back|rear|environment/i.test(device.label)
-        ) || videoDevices[0]; 
-      */
+        )
 
-        const backCamera = await selectBestBackCamera(videoDevices);
+        const backCamera = await selectBestBackCamera(backCameraList);
       
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
