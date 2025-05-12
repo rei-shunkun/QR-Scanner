@@ -221,6 +221,7 @@
       </div>
       <div id="match-result"></div>
     </div>
+    <div id="camera-info" style="padding: 1em; border: 1px solid #ccc; margin-top: 1em;"></div>
 
     
     <script>
@@ -301,6 +302,10 @@
         )
 
         const backCamera = await selectBestBackCamera(videoDevices);
+        const infoDiv = document.getElementById("camera-info");
+        infoDiv.innerHTML = "<h4>検出されたカメラ:</h4><ul>" + 
+          videoDevices.map(device => `<li><strong>${device.label || "(ラベルなし)"}</strong><br><small>ID: ${device.deviceId}</small></li>`).join("") + 
+          "</ul>";
       
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
