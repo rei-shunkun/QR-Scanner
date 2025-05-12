@@ -342,7 +342,7 @@
             }
           });          
           const track = stream.getVideoTracks()[0];
-          const capabilities = track.settings();
+          const capabilities = track.getSettings();
           track.stop(); // 停止预览流，避免占用摄像头
         } catch (e) {
           console.warn("Failed to get stream for device", device.label, e);
