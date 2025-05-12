@@ -255,6 +255,7 @@
           備考: '優先出荷'
         }
       };
+      await navigator.mediaDevices.getUserMedia({ video: true });
 
       async function selectBestBackCamera(videoDevices) {
         const envCameras = videoDevices.filter(device =>
@@ -333,20 +334,6 @@
         </div>
       `;
         
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              deviceId: { exact: backCamera.deviceId },
-              width: { ideal: 8000 },
-              height: { ideal: 4000 }
-            }
-          });          
-          const track = stream.getVideoTracks()[0];
-          const capabilities = track.getSettings();
-          track.stop(); // 停止预览流，避免占用摄像头
-        } catch (e) {
-          console.warn("Failed to get stream for device", device.label, e);
-        }
         
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
