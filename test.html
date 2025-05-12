@@ -397,6 +397,7 @@
           fps: 10,
           qrbox: { width: 250, height: 250 },
           aspectRatio: 1.777,
+          zoom: zoomValue,
           videoConstraints: {
             deviceId: { exact: backCamera.deviceId },
             width: { ideal: 8000 },
@@ -405,9 +406,7 @@
             advanced: [{ zoom: zoomValue }]
           }
         };
-        qrScanner.start(config.videoConstraints,
-        config,)
-        
+
         qrScanner.start(
           config.videoConstraints,
           config,
