@@ -291,7 +291,7 @@
               }
             });
             const track = stream.getVideoTracks()[0];
-            const capabilities = track.getCapabilities();
+            const capabilities = track.settings();
       
             // 使用递归函数展开 capabilities 对象
             capabilitiesInfo = deepPrint(capabilities);
@@ -406,7 +406,7 @@
             advanced: [{ zoom: zoomValue }]
           }
         };
-
+        showCameraDetails();
         qrScanner.start(
           config.videoConstraints,
           config,
