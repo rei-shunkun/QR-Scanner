@@ -273,7 +273,7 @@
         result += "</ul>";
         return result;
       }
-      
+     /* 
       async function showCameraDetails() {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
@@ -311,6 +311,7 @@
         }
       }
       showCameraDetails();
+      */
       async function selectBestBackCamera(videoDevices) {
         const envCameras = videoDevices.filter(device =>
           /back|rear|environment/i.test(device.label)
