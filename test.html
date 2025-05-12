@@ -252,10 +252,9 @@
           場所: '第2倉庫・南エリア',
           製品: '特注品A',
           在庫: '50Ton',
-          備考: '優先出荷'
         }
       };
-      await navigator.mediaDevices.getUserMedia({ video: true });
+
 
       async function selectBestBackCamera(videoDevices) {
         const envCameras = videoDevices.filter(device =>
@@ -300,6 +299,7 @@
       let scanners = {};
 
       async function startScan(type) {
+        await navigator.mediaDevices.getUserMedia({ video: true });
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
         const backCameraList = videoDevices.find(device =>
