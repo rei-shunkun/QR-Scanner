@@ -254,6 +254,45 @@
           備考: '優先出荷'
         }
       };
+
+      async function showCameraDetails() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const infoDiv = document.getElementById("camera-info");
+        infoDiv.innerHTML = "<h4>検出されたカメラ詳細:</h4>";
+      
+        for (const device of videoDevices) {
+          let settingsInfo = "";
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { deviceId: device.deviceId }
+            });
+            const track = stream.getVideoTracks()[0];
+            const settings = track.getSettings();
+      
+            // 除去 label 和 deviceId
+            const otherSettings = Object.entries(settings)
+              .filter(([key]) => key !== 'label' && key !== 'deviceId')
+              .map(([key, val]) => `<li><strong>${key}</strong>: ${val}</li>`)
+              .join("");
+      
+            settingsInfo = `<ul>${otherSettings}</ul>`;
+      
+            track.stop(); // 关闭摄像头
+          } catch (e) {
+            settingsInfo = `<div style="color: red;">⚠️ カメラアクセス失敗: ${e.message}</div>`;
+          }
+      
+          infoDiv.innerHTML += `
+            <div style="margin-bottom: 1em; border-bottom: 1px dashed #aaa;">
+              <strong>カメラ名:</strong> ${device.label || "(ラベルなし)"}<br/>
+              <strong>ID:</strong> ${device.deviceId}<br/>
+              ${settingsInfo}
+            </div>
+          `;
+        }
+      }
+      showCameraDetails();
       async function selectBestBackCamera(videoDevices) {
         const envCameras = videoDevices.filter(device =>
           /back|rear|environment/i.test(device.label)
@@ -302,11 +341,7 @@
         )
 
         const backCamera = await selectBestBackCamera(videoDevices);
-        const infoDiv = document.getElementById("camera-info");
-        infoDiv.innerHTML = "<h4>検出されたカメラ:</h4><ul>" + 
-          videoDevices.map(device => `<li><strong>${device.label || "(ラベルなし)"}</strong><br><small>ID: ${device.deviceId}</small></li>`).join("") + 
-          "</ul>";
-      
+
         if (!backCamera) {
           alert("NO CAMERA DETECTED");
           return;
