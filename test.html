@@ -71,19 +71,19 @@
         cursor: not-allowed;
       }
 
-    .qr-container {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%); /* 向上左各偏移自身一半，实现真正居中 */
-      width: 100%;
-      max-width: 300px;
-      border: 2px solid #1976d2;
-      border-radius: 8px;
-      overflow: hidden;
-      background: white; /* 可选，确保不透明 */
-      z-index: 1000; /* 可选，确保浮在其他元素上面 */
-    }
+      .qr-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* 向上左各偏移自身一半，实现真正居中 */
+        width: 100%;
+        max-width: 300px;
+        border: 2px solid #1976d2;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white; /* 可选，确保不透明 */
+        z-index: 1000; /* 可选，确保浮在其他元素上面 */
+      }
 
       .scan-line {
         position: absolute;
@@ -404,10 +404,7 @@
       }
 
 
-      let orderTimer = null;
-      document.getElementById('order-number').addEventListener('keydown', function () {
-          clearTimeout(orderTimer);
-          orderTimer = setTimeout(async () => {
+      document.getElementById('order-number').addEventListener('focusout', function () {
               const orderNo = this.value.trim().toUpperCase();
               const orderInfoDiv = document.getElementById('order-info');
               console.log("订单号输入:", orderNo);
@@ -428,8 +425,7 @@
               } else {
                   orderInfoDiv.textContent = '注文番号が見つかりません';
               }
-          }, 100); // 延迟判断扫码是否完成
-      });
+          });
 
       // location-number 输入框扫码处理
       let locationTimer = null;
