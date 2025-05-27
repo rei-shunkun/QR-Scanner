@@ -391,6 +391,8 @@
               qrScanner.clear();
               document.getElementById(readerId).innerHTML = "";
               scanners[type] = null;
+              console.log("QR Scanner started for type:", type);
+              showInfo(type);
             });
           },
           (errorMessage) => {
