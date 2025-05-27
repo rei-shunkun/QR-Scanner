@@ -402,7 +402,7 @@
       }
 
 
-      document.getElementById('order-number').addEventListener('input', async function () {
+      document.getElementById('order-number').addEventListener('change', async function () {
           const orderNo = this.value.trim().toUpperCase();
           const orderInfoDiv = document.getElementById('order-info');
           console.log("订单号输入:", orderNo);
@@ -425,7 +425,7 @@
 
       });
 
-      document.getElementById('location-number').addEventListener('input', async function () {
+      document.getElementById('location-number').addEventListener('change', async function () {
           const locNo = this.value.trim().toUpperCase();
           const locationInfo = document.getElementById('location-info');
 
