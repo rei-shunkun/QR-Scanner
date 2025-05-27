@@ -398,7 +398,7 @@
       function showInfo (type) {
         console.log("showInfo called with type:", type);
         if (type === 'order') {
-          const orderNo = document.getElementById('order-number').trim().toUpperCase();
+          const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
           const orderInfoDiv = document.getElementById('order-info');
           console.log("订单号输入:", orderNo);
 
