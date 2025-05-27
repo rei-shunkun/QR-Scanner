@@ -273,16 +273,7 @@
           }
         };
 
-        try {
-          await hiddenScanner.start(
-            config.videoConstraints,
-            config,
-            () => {}, // 不处理扫码结果
-            () => {}
-          );
-        } catch (err) {
-          console.warn("隐式扫描器启动失败:", err);
-        }
+
       });
 
 
