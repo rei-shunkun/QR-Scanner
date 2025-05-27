@@ -488,7 +488,6 @@
         const locNo = document.getElementById('location-number').value.trim().toUpperCase();
         const resultBox = document.getElementById('match-result');
         const shippingBtn = document.getElementById('shipping-btn');
-        const detailsDiv = document.getElementById('order-details');
         const order = orderData[orderNo];
         const location = locationData[locNo];
 
@@ -499,7 +498,6 @@
           return;
         }
 
-        detailsDiv.style.display = 'block';
         resultBox.style.display = 'block';
         setTimeout(() => {
           resultBox.style.display = 'none';
