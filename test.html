@@ -405,7 +405,7 @@
       document.getElementById('order-number').addEventListener('input', async function () {
           const orderNo = this.value.trim().toUpperCase();
           const orderInfoDiv = document.getElementById('order-info');
-
+          console.log("订单号输入:", orderNo);
           // 如果输入为空，不发送请求
           if (!orderNo) {
               orderInfoDiv.textContent = '';
