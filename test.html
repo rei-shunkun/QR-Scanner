@@ -73,17 +73,17 @@
 
     .qr-container {
       display: none;
-      position: fixed; /* 固定在视口中 */
+      position: fixed; 
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%); /* 完全居中 */
+      transform: translate(-50%, -50%);
       width: 100%;
       max-width: 300px;
       border: 2px solid #1976d2;
       border-radius: 8px;
       overflow: hidden;
-      background: white; /* 避免透明背景 */
-      z-index: 1000; /* 保证浮在上层 */
+      background: white;
+      z-index: 1000; 
     }
 
     .scan-line {
@@ -174,12 +174,20 @@
       }
 
       #match-result {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 500px;
+        background-color: rgba(255, 255, 255, 0.5); 
         text-align: center;
         font-size: 1.1rem;
-        margin-top: 1rem;
+        margin-top: 0; 
         padding: 0.5rem;
         border-radius: 6px;
         display: none;
+        z-index: 999; 
       }
     </style>
   </head>
@@ -223,9 +231,7 @@
       <button id="shipping-btn" onclick="shipping()" disabled>出荷</button>
     </div>
 
-    <div id="order-details">
-      <div id="match-result"></div>
-    </div>
+    <div id="match-result"></div>
     <div style="display:none">
       <div id="hidden-scanner"></div>
     </div>
@@ -260,7 +266,7 @@
           在庫: '50Ton',
         }
       };
-      // 在页面加载时运行
+
       window.addEventListener("DOMContentLoaded", async () => {
         const hiddenScanner = new Html5Qrcode("hidden-scanner");
 
@@ -268,7 +274,7 @@
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
         const backCamera = await selectBestBackCamera(videoDevices);
         const config = {
-          fps: 1, // 最低帧率，减少资源占用
+          fps: 1, 
           qrbox: { width: 50, height: 50 },
           aspectRatio: 1.777,
           videoConstraints: {
@@ -276,7 +282,7 @@
             width: { ideal: 8000 },
             height: { ideal: 4000 },
             focusMode: "continuous",
-            advanced: [{ zoom: 8 }] // 尽量激活长焦摄像头
+            advanced: [{ zoom: 8 }] 
           }
         };
 
@@ -284,7 +290,7 @@
           await hiddenScanner.start(
             config.videoConstraints,
             config,
-            () => {}, // 不处理扫码结果
+            () => {}, 
             () => {}
           );
         } catch (err) {
@@ -301,7 +307,7 @@
         if (envCameras.length === 1) return envCameras[0];
         if (envCameras.length === 0) return videoDevices[0]; // fallback
       
-        // 检查哪个 environment 摄像头分辨率高
+
         let bestCamera = null;
         let bestHeight = 0;
       
@@ -323,7 +329,7 @@
               bestCamera = device;
             }
       
-            track.stop(); // 停止预览流，避免占用摄像头
+            track.stop(); 
           } catch (e) {
             console.warn("Failed to get stream for device", device.label, e);
           }
@@ -495,6 +501,9 @@
 
         detailsDiv.style.display = 'block';
         resultBox.style.display = 'block';
+        setTimeout(() => {
+          resultBox.style.display = 'none';
+        }, 5000);
 
         if (order.製品名 === location.製品) {
           resultBox.textContent = '✔ 製品名一致しています';
