@@ -180,16 +180,10 @@
       <div class="input-group">
         <input type="text" id="order-number" />
         <button onclick="startScan('order')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order" value="1" checked> Zoom 1x</label>
-        <label><input type="radio" name="zoom-order" value="3"> Zoom 3x</label>
-        <label><input type="radio" name="zoom-order" value="8"> Zoom 8x</label>
+        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
       </div>
-      <div class="qr-container">
-        <div id="qr-reader-order"></div>
-        <div class="scan-line"></div>
-      </div>
-      <div id="selected-id" style="padding: 1em; border: 1px solid #ccc; margin-top: 1em;"></div>
-
     </div>
 
     <div class="qr-block">
@@ -197,13 +191,9 @@
       <div class="input-group">
         <input type="text" id="location-number" />
         <button onclick="startScan('location')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order" value="1" checked> Zoom 1x</label>
-        <label><input type="radio" name="zoom-order" value="3"> Zoom 3x</label>
-        <label><input type="radio" name="zoom-order" value="8"> Zoom 8x</label>
-      </div>
-      <div class="qr-container">
-        <div id="qr-reader-location"></div>
-        <div class="scan-line"></div>
+        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
       </div>
     </div>
 
@@ -360,16 +350,7 @@
         }
         const zoomRadioName = `zoom-${type}`;
         const zoomValue = parseFloat(document.querySelector(`input[name="${zoomRadioName}"]:checked`)?.value || "1");
-        
-        
-        const infoDiv = document.getElementById("selected-id");
-        infoDiv.innerHTML = `
-        <div style="margin-bottom: 1em; border-bottom: 1px dashed #aaa;">
-          <strong>カメラ名:</strong> ${backCamera.label || "(ラベルなし)"}<br/>
-          <strong>ID:</strong> ${backCamera.deviceId}<br/>
-        </div>
-      `;
-        
+
         
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
@@ -413,15 +394,58 @@
       }
 
 
+      document.getElementById('order-number').addEventListener('input', async function () {
+          const orderNo = this.value.trim().toUpperCase();
+          const orderInfoDiv = document.getElementById('order-info');
+
+          // 如果输入为空，不发送请求
+          if (!orderNo) {
+              orderInfoDiv.textContent = '';
+              return;
+          }
+          const order = orderData[orderNo];
+          if (order) {
+              orderInfoDiv.innerHTML = `
+                  <p><strong>製品名:</strong> ${order.製品名}</p>
+                  <p><strong>重量:</strong> ${order.重量}</p>
+                  <p><strong>出荷日:</strong> ${order.出荷日}</p>
+                  <p><strong>トラックナンバー:</strong> ${order.トラックナンバー}</p>
+              `;
+              return;
+          }
+          orderInfoDiv.textContent = '注文番号が見つかりません';
+
+      });
+
+      document.getElementById('location-number').addEventListener('input', async function () {
+          const locNo = this.value.trim().toUpperCase();
+          const locationInfo = document.getElementById('location-info');
+
+          // 如果输入为空，不发送请求
+          if (!locNo) {
+              locationInfo.textContent = '';
+              return;
+          }
+          const location = locationData[locNo];
+          if (location) {
+              locationInfo.innerHTML =
+                  `<li><strong>置場番号:</strong> ${locNo}</li>
+                   <li><strong>場所:</strong> ${location.場所}</li>
+                   <li><strong>製品:</strong> ${location.製品}</li>
+                   <li><strong>在庫:</strong> ${location.在庫}</li>
+                   <li><strong>備考:</strong> ${location.備考 || '-'}</li>`;
+              return;
+          }
+          locationInfo.textContent = '置場番号が見つかりません';
+
+      });
+
       function validate() {
         const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
         const locNo = document.getElementById('location-number').value.trim().toUpperCase();
-        const detailsDiv = document.getElementById('order-details');
-        const orderInfo = document.getElementById('order-info');
-        const locationInfo = document.getElementById('location-info');
         const resultBox = document.getElementById('match-result');
         const shippingBtn = document.getElementById('shipping-btn');
-
+        const detailsDiv = document.getElementById('order-details');
         const order = orderData[orderNo];
         const location = locationData[locNo];
 
@@ -431,22 +455,6 @@
           resultBox.style.display = 'none';
           return;
         }
-
-        orderInfo.innerHTML = `
-          <li><strong>注文番号:</strong> ${orderNo}</li>
-          <li><strong>製品名:</strong> ${order.製品名}</li>
-          <li><strong>重量:</strong> ${order.重量}</li>
-          <li><strong>出荷日:</strong> ${order.出荷日}</li>
-          <li><strong>トラックナンバー:</strong> ${order.トラックナンバー}</li>
-        `;
-
-        locationInfo.innerHTML = `
-          <li><strong>置場番号:</strong> ${locNo}</li>
-          <li><strong>場所:</strong> ${location.場所}</li>
-          <li><strong>製品:</strong> ${location.製品}</li>
-          <li><strong>在庫:</strong> ${location.在庫}</li>
-          <li><strong>備考:</strong> ${location.備考 || '-'}</li>
-        `;
 
         detailsDiv.style.display = 'block';
         resultBox.style.display = 'block';
