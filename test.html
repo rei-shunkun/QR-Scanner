@@ -180,9 +180,9 @@
       <div class="input-group">
         <input type="text" id="order-number" />
         <button onclick="startScan('order')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
-        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
-        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
+        <label><input type="radio" name="zoom-order-order" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order-order" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order-order" value="8"> 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-order"></div>
@@ -195,9 +195,9 @@
       <div class="input-group">
         <input type="text" id="location-number" />
         <button onclick="startScan('location')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
-        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
-        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
+        <label><input type="radio" name="zoom-order-loc" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order-loc" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order-loc" value="8"> 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-location"></div>
@@ -408,7 +408,7 @@
           console.log("订单号输入:", orderNo);
           // 如果输入为空，不发送请求
           if (!orderNo) {
-              orderInfoDiv.textContent = '';
+              orderInfoDiv.textContent = '123';
               return;
           }
           const order = orderData[orderNo];
