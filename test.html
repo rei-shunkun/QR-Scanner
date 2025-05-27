@@ -373,7 +373,8 @@
             advanced: [{ zoom: zoomValue }]
           }
         };
-        const qrContainer = document.querySelector(`.qr-container`);
+        const qrContainer = document.getElementById(containerId);
+
         if (qrContainer) {
           qrContainer.style.display = 'block'; 
         }
