@@ -188,7 +188,7 @@
         <label><input type="radio" name="zoom-order" value="3"> 3x</label>
         <label><input type="radio" name="zoom-order" value="8"> 8x</label>
       </div>
-      <div class="qr-container">
+      <div class="qr-container" id="qr-container-order">
         <div id="qr-reader-order"></div>
         <div class="scan-line"></div>
       </div>
@@ -204,7 +204,7 @@
         <label><input type="radio" name="zoom-location" value="3"> 3x</label>
         <label><input type="radio" name="zoom-location" value="8"> 8x</label>
       </div>
-      <div class="qr-container">
+      <div class="qr-container" id="qr-container-location">
         <div id="qr-reader-location"></div>
         <div class="scan-line"></div>
       </div>
@@ -344,6 +344,7 @@
         }
       
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
+        const containerId = type === 'order' ? "qr-container-order" : "qr-container-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
       
         if (scanners[type]) {
@@ -372,16 +373,19 @@
             advanced: [{ zoom: zoomValue }]
           }
         };
-
+        const qrContainer = document.querySelector(`.qr-container`);
+        if (qrContainer) {
+          qrContainer.style.display = 'block'; 
+        }
+        
         qrScanner.start(
           config.videoConstraints,
           config,
           (decodedText) => {
             document.getElementById(inputId).value = decodedText;
-            const qrContainer = document.querySelector(`.qr-container`);
             const container = document.getElementById(readerId).closest('.qr-container');
             if (container) {
-              qrContainer.style.display = 'block'; 
+
               container.classList.add('scan-success');
               setTimeout(() => container.classList.remove('scan-success'), 500);
             }
