@@ -397,12 +397,13 @@
             // console.warn("Scan error:", errorMessage);
           }
         );
-
+        console.log("QR Scanner started for type:", type);
         showInfo(type);
 
       }
 
       function showInfo (type) {
+        console.log("showInfo called with type:", type);
         if (type === 'order') {
           const orderNo = document.getElementById('order-number').trim().toUpperCase();
           const orderInfoDiv = document.getElementById('order-info');
