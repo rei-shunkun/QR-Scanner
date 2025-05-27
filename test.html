@@ -188,10 +188,7 @@
         <div id="qr-reader-order"></div>
         <div class="scan-line"></div>
       </div>
-      <div>
-        <h3>注文詳細</h3>
-        <ul id="order-info"></ul>
-      </div>
+      <div id="order-info"></div>
     </div>
 
     <div class="qr-block">
@@ -207,10 +204,7 @@
         <div id="qr-reader-location"></div>
         <div class="scan-line"></div>
       </div>
-      <div>
-        <h3>置場詳細</h3>
-        <ul id="location-info"></ul>
-      </div>
+      <div id="location-info"></div>
     </div>
 
     <div id="result">
@@ -399,9 +393,6 @@
             // console.warn("Scan error:", errorMessage);
           }
         );
-        console.log("QR Scanner started for type:", type);
-        showInfo(type);
-
       }
 
       function showInfo (type) {
@@ -419,6 +410,7 @@
           const order = orderData[orderNo];
           if (order) {
               orderInfoDiv.innerHTML = `
+                  <h3>注文詳細</h3>
                   <p><strong>製品名:</strong> ${order.製品名}</p>
                   <p><strong>重量:</strong> ${order.重量}</p>
                   <p><strong>出荷日:</strong> ${order.出荷日}</p>
@@ -441,11 +433,12 @@
           const location = locationData[locNo];
           if (location) {
               locationInfoDiv.innerHTML = `
-                  <li><strong>置場番号:</strong> ${locNo}</li>
-                  <li><strong>場所:</strong> ${location.場所}</li>
-                  <li><strong>製品:</strong> ${location.製品}</li>
-                  <li><strong>在庫:</strong> ${location.在庫}</li>
-                  <li><strong>備考:</strong> ${location.備考 || '-'}</li>
+                  <h3>置場詳細</h3>
+                  <p><strong>置場番号:</strong> ${locNo}</p>
+                  <p><strong>場所:</strong> ${location.場所}</p>
+                  <p><strong>製品:</strong> ${location.製品}</p>
+                  <p><strong>在庫:</strong> ${location.在庫}</p>
+                  <p><strong>備考:</strong> ${location.備考 || '-'}</p>
               `;
           } else {
               locationInfoDiv.textContent = '置場番号が見つかりません';
