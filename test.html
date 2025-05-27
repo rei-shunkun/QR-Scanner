@@ -378,10 +378,10 @@
           config,
           (decodedText) => {
             document.getElementById(inputId).value = decodedText;
-      
+            const qrContainer = document.querySelector(`.qr-container`);
             const container = document.getElementById(readerId).closest('.qr-container');
             if (container) {
-              container.style.display = 'block'; 
+              qrContainer.style.display = 'block'; 
               container.classList.add('scan-success');
               setTimeout(() => container.classList.remove('scan-success'), 500);
             }
@@ -390,7 +390,7 @@
               qrScanner.clear();
               document.getElementById(readerId).innerHTML = "";
               scanners[type] = null;
-              container.style.display = 'none';
+              qrContainer.style.display = 'none';
               showInfo(type);
             });
           },
