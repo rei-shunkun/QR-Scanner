@@ -180,9 +180,9 @@
       <div class="input-group">
         <input type="text" id="order-number" />
         <button onclick="startScan('order')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order-order" value="1" checked> 1x</label>
-        <label><input type="radio" name="zoom-order-order" value="3"> 3x</label>
-        <label><input type="radio" name="zoom-order-order" value="8"> 8x</label>
+        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-order"></div>
@@ -199,9 +199,9 @@
       <div class="input-group">
         <input type="text" id="location-number" />
         <button onclick="startScan('location')">QRスキャン</button>
-        <label><input type="radio" name="zoom-order-loc" value="1" checked> 1x</label>
-        <label><input type="radio" name="zoom-order-loc" value="3"> 3x</label>
-        <label><input type="radio" name="zoom-order-loc" value="8"> 8x</label>
+        <label><input type="radio" name="zoom-location" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-location" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-location" value="8"> 8x</label>
       </div>
       <div class="qr-container">
         <div id="qr-reader-location"></div>
@@ -400,50 +400,59 @@
       }
 
 
-      document.getElementById('order-number').addEventListener('change', async function () {
-          const orderNo = this.value.trim().toUpperCase();
-          const orderInfoDiv = document.getElementById('order-info');
-          console.log("订单号输入:", orderNo);
-          // 如果输入为空，不发送请求
-          if (!orderNo) {
-              orderInfoDiv.textContent = '123';
-              return;
-          }
-          const order = orderData[orderNo];
-          if (order) {
-              orderInfoDiv.innerHTML = `
-                  <p><strong>製品名:</strong> ${order.製品名}</p>
-                  <p><strong>重量:</strong> ${order.重量}</p>
-                  <p><strong>出荷日:</strong> ${order.出荷日}</p>
-                  <p><strong>トラックナンバー:</strong> ${order.トラックナンバー}</p>
-              `;
-              return;
-          }
-          orderInfoDiv.textContent = '注文番号が見つかりません';
+      let orderTimer = null;
+      document.getElementById('order-number').addEventListener('input', function () {
+          clearTimeout(orderTimer);
+          orderTimer = setTimeout(async () => {
+              const orderNo = this.value.trim().toUpperCase();
+              const orderInfoDiv = document.getElementById('order-info');
+              console.log("订单号输入:", orderNo);
 
+              if (!orderNo) {
+                  orderInfoDiv.textContent = '123';
+                  return;
+              }
+
+              const order = orderData[orderNo];
+              if (order) {
+                  orderInfoDiv.innerHTML = `
+                      <p><strong>製品名:</strong> ${order.製品名}</p>
+                      <p><strong>重量:</strong> ${order.重量}</p>
+                      <p><strong>出荷日:</strong> ${order.出荷日}</p>
+                      <p><strong>トラックナンバー:</strong> ${order.トラックナンバー}</p>
+                  `;
+              } else {
+                  orderInfoDiv.textContent = '注文番号が見つかりません';
+              }
+          }, 100); // 延迟判断扫码是否完成
       });
 
-      document.getElementById('location-number').addEventListener('change', async function () {
-          const locNo = this.value.trim().toUpperCase();
-          const locationInfo = document.getElementById('location-info');
+      // location-number 输入框扫码处理
+      let locationTimer = null;
+      document.getElementById('location-number').addEventListener('input', function () {
+          clearTimeout(locationTimer);
+          locationTimer = setTimeout(async () => {
+              const locNo = this.value.trim().toUpperCase();
+              const locationInfo = document.getElementById('location-info');
 
-          // 如果输入为空，不发送请求
-          if (!locNo) {
-              locationInfo.textContent = '';
-              return;
-          }
-          const location = locationData[locNo];
-          if (location) {
-              locationInfo.innerHTML =
-                  `<li><strong>置場番号:</strong> ${locNo}</li>
-                   <li><strong>場所:</strong> ${location.場所}</li>
-                   <li><strong>製品:</strong> ${location.製品}</li>
-                   <li><strong>在庫:</strong> ${location.在庫}</li>
-                   <li><strong>備考:</strong> ${location.備考 || '-'}</li>`;
-              return;
-          }
-          locationInfo.textContent = '置場番号が見つかりません';
+              if (!locNo) {
+                  locationInfo.textContent = '';
+                  return;
+              }
 
+              const location = locationData[locNo];
+              if (location) {
+                  locationInfo.innerHTML = `
+                      <li><strong>置場番号:</strong> ${locNo}</li>
+                      <li><strong>場所:</strong> ${location.場所}</li>
+                      <li><strong>製品:</strong> ${location.製品}</li>
+                      <li><strong>在庫:</strong> ${location.在庫}</li>
+                      <li><strong>備考:</strong> ${location.備考 || '-'}</li>
+                  `;
+              } else {
+                  locationInfo.textContent = '置場番号が見つかりません';
+              }
+          }, 100); // 延迟判断扫码是否完成
       });
 
       function validate() {
