@@ -71,15 +71,19 @@
         cursor: not-allowed;
       }
 
-      .qr-container {
-        position: relative;
-        width: 100%;
-        max-width: 300px;
-        margin: 0.5rem auto 0;
-        border: 2px solid #1976d2;
-        border-radius: 8px;
-        overflow: hidden;
-      }
+    .qr-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* 向上左各偏移自身一半，实现真正居中 */
+      width: 100%;
+      max-width: 300px;
+      border: 2px solid #1976d2;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white; /* 可选，确保不透明 */
+      z-index: 1000; /* 可选，确保浮在其他元素上面 */
+    }
 
       .scan-line {
         position: absolute;
@@ -401,7 +405,7 @@
 
 
       let orderTimer = null;
-      document.getElementById('order-number').addEventListener('input', function () {
+      document.getElementById('order-number').addEventListener('keydown', function () {
           clearTimeout(orderTimer);
           orderTimer = setTimeout(async () => {
               const orderNo = this.value.trim().toUpperCase();
@@ -429,7 +433,7 @@
 
       // location-number 输入框扫码处理
       let locationTimer = null;
-      document.getElementById('location-number').addEventListener('input', function () {
+      document.getElementById('location-number').addEventListener('change', function () {
           clearTimeout(locationTimer);
           locationTimer = setTimeout(async () => {
               const locNo = this.value.trim().toUpperCase();
