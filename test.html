@@ -71,57 +71,57 @@
         cursor: not-allowed;
       }
 
-.qr-container {
-  position: fixed; /* 固定在视口中 */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* 完全居中 */
-  width: 100%;
-  max-width: 300px;
-  border: 2px solid #1976d2;
-  border-radius: 8px;
-  overflow: hidden;
-  background: white; /* 避免透明背景 */
-  z-index: 1000; /* 保证浮在上层 */
-}
+      .qr-container {
+        position: fixed; /* 固定在视口中 */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* 完全居中 */
+        width: 100%;
+        max-width: 300px;
+        border: 2px solid #1976d2;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white; /* 避免透明背景 */
+        z-index: 1000; /* 保证浮在上层 */
+      }
 
-.scan-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: #00c853;
-  box-shadow: 0 0 10px #00c853;
-  animation: scanMove 2s linear infinite;
-  z-index: 10;
-}
+      .scan-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #00c853;
+        box-shadow: 0 0 10px #00c853;
+        animation: scanMove 2s linear infinite;
+        z-index: 10;
+      }
 
-@keyframes scanMove {
-  0% {
-    top: 0;
-  }
-  100% {
-    top: 100%;
-  }
-}
+      @keyframes scanMove {
+        0% {
+          top: 0;
+        }
+        100% {
+          top: 100%;
+        }
+      }
 
-.qr-container.scan-success {
-  animation: flashSuccess 0.5s;
-  border-color: #00c853;
-}
+      .qr-container.scan-success {
+        animation: flashSuccess 0.5s;
+        border-color: #00c853;
+      }
 
-@keyframes flashSuccess {
-  0% {
-    box-shadow: 0 0 0px #00c853;
-  }
-  50% {
-    box-shadow: 0 0 20px #00c853;
-  }
-  100% {
-    box-shadow: 0 0 0px #00c853;
-  }
-}
+      @keyframes flashSuccess {
+        0% {
+          box-shadow: 0 0 0px #00c853;
+        }
+        50% {
+          box-shadow: 0 0 20px #00c853;
+        }
+        100% {
+          box-shadow: 0 0 0px #00c853;
+        }
+      }
       #result {
         text-align: center;
         margin-top: 1.5rem;
@@ -381,6 +381,8 @@
             const container = document.getElementById(readerId).closest('.qr-container');
             if (container) {
               container.classList.add('scan-success');
+              const scanLine = container.querySelector('.scan-line');
+              if (scanLine) scanLine.style.display = 'block';
               setTimeout(() => container.classList.remove('scan-success'), 500);
             }
       
@@ -388,7 +390,8 @@
               qrScanner.clear();
               document.getElementById(readerId).innerHTML = "";
               scanners[type] = null;
-
+              const scanLine = container.querySelector('.scan-line');
+              if (scanLine) scanLine.style.display = 'none';
               showInfo(type);
             });
           },
