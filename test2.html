@@ -298,64 +298,12 @@
         }
       });
 
-
-      async function selectBestBackCamera(videoDevices) {
-        const envCameras = videoDevices.filter(device =>
-          /back|rear|environment/i.test(device.label)
-        );
-      
-        if (envCameras.length === 1) return envCameras[0];
-        if (envCameras.length === 0) return videoDevices[0]; // fallback
-      
-
-        let bestCamera = null;
-        let bestHeight = 0;
-      
-        for (const device of envCameras) {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                deviceId: { exact: device.deviceId },
-                width: { ideal: 8000 },
-                height: { ideal: 4000 }
-              }
-            });
-      
-            const track = stream.getVideoTracks()[0];
-            const settings = track.getSettings();
-      
-            if (settings.height > bestHeight) {
-              bestHeight = settings.height;
-              bestCamera = device;
-            }
-      
-            track.stop(); 
-          } catch (e) {
-            console.warn("Failed to get stream for device", device.label, e);
-          }
-        }
-      
-        return bestCamera || envCameras[0]; // fallback
-      }
-
-
       let scanners = {};
 
       async function startScan(type) {
         await navigator.mediaDevices.getUserMedia({ video: true });
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        const backCameraList = videoDevices.find(device =>
-          /back|rear|environment/i.test(device.label)
-        )
-
-        const backCamera = await selectBestBackCamera(videoDevices);
-
-        if (!backCamera) {
-          alert("NO CAMERA DETECTED");
-          return;
-        }
-      
         const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
         const containerId = type === 'order' ? "qr-container-order" : "qr-container-location";
         const inputId = type === 'order' ? "order-number" : "location-number";
