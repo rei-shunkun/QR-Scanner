@@ -267,35 +267,6 @@
         }
       };
 
-      window.addEventListener("DOMContentLoaded", async () => {
-        const hiddenScanner = new Html5Qrcode("hidden-scanner");
-
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(device => device.kind === 'videoinput');
-        const config = {
-          fps: 1, 
-          qrbox: { width: 50, height: 50 },
-          aspectRatio: 1.777,
-          videoConstraints: {
-            facingMode: "environment",
-            width: { ideal: 8000 },
-            height: { ideal: 4000 },
-            focusMode: "continuous",
-            advanced: [{ zoom: 8 }] 
-          }
-        };
-
-        try {
-          await hiddenScanner.start(
-            config.videoConstraints,
-            config,
-            () => {}, 
-            () => {}
-          );
-        } catch (err) {
-          console.warn("隐式扫描器启动失败:", err);
-        }
-      });
 
       const scanners = {
         order: null,
