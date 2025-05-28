@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera QR Scanner with Capabilities</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #camera-buttons button {
+      margin: 4px;
+      padding: 6px 12px;
+    }
+    #qr-reader {
+      margin-top: 16px;
+      border: 2px solid #1976d2;
+      max-width: 400px;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 10px;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>选择摄像头</h2>
+  <div id="camera-buttons"></div>
+
+  <button id="start-button" disabled>开始扫描</button>
+
+  <div id="qr-reader" style="width: 100%; max-width: 400px;"></div>
+
+  <h3>摄像头 Settings</h3>
+  <pre id="settings"></pre>
+
+  <h3>摄像头 Capabilities</h3>
+  <pre id="capabilities"></pre>
+
+  <script>
+    let selectedDeviceId = null;
+    let qrScanner = null;
+
+    async function listCameras() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === "videoinput");
+      const container = document.getElementById("camera-buttons");
+      container.innerHTML = "";
+      videoDevices.forEach(device => {
+        const btn = document.createElement("button");
+        btn.textContent = device.label || `Camera ${container.children.length + 1}`;
+        btn.onclick = () => {
+          selectedDeviceId = device.deviceId;
+          document.getElementById("start-button").disabled = false;
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    async function showCameraInfo(track) {
+      const settings = track.getSettings();
+      const capabilities = track.getCapabilities();
+      document.getElementById("settings").textContent = JSON.stringify(settings, null, 2);
+      document.getElementById("capabilities").textContent = JSON.stringify(capabilities, null, 2);
+    }
+
+    async function startScanner() {
+      if (!selectedDeviceId) return;
+
+      const constraints = {
+        video: {
+          deviceId: { exact: selectedDeviceId },
+          width: { ideal: 4096 },
+          height: { ideal: 2160 },
+          focusMode: "continuous"
+        }
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      const track = stream.getVideoTracks()[0];
+      await showCameraInfo(track);
+      track.stop(); // Stop preview; we'll re-use the ID in Html5Qrcode
+
+      if (qrScanner) {
+        await qrScanner.stop();
+        await qrScanner.clear();
+        qrScanner = null;
+      }
+
+      qrScanner = new Html5Qrcode("qr-reader");
+      qrScanner.start(
+        { deviceId: { exact: selectedDeviceId } },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.777
+        },
+        (text) => {
+          alert("扫描到二维码: " + text);
+        },
+        (error) => {
+          // console.warn("扫描失败", error);
+        }
+      );
+    }
+
+    document.getElementById("start-button").addEventListener("click", startScanner);
+    listCameras();
+  </script>
+</body>
+</html>
