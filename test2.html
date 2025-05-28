@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QRコードスキャン</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        padding: 1rem;
+        margin: 0;
+        background-color: #f2f2f2;
+        color: #333;
+      }
+
+      h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5em;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 0.2em;
+      }
+
+      .qr-block {
+        margin-bottom: 1.5rem;
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      .qr-block label {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      input[type="text"] {
+        flex: 1 1 auto;
+        padding: 0.6rem;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+
+      button {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        font-weight: 500;
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+
+      button:hover:not(:disabled) {
+        background-color: #1565c0;
+      }
+
+      button:disabled {
+        background-color: #b0b0b0;
+        cursor: not-allowed;
+      }
+
+    .qr-container {
+      display: none;
+      position: fixed; 
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      max-width: 300px;
+      border: 2px solid #1976d2;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+      z-index: 1000; 
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #00c853;
+      box-shadow: 0 0 10px #00c853;
+      animation: scanMove 2s linear infinite;
+      z-index: 10;
+    }
+
+    .qr-container button {
+      display: block;
+      margin: 1rem auto; 
+    }
+
+    @keyframes scanMove {
+      0% {
+        top: 0;
+      }
+      100% {
+        top: 100%;
+      }
+    }
+
+    .qr-container.scan-success {
+      animation: flashSuccess 0.5s;
+      border-color: #00c853;
+    }
+
+    @keyframes flashSuccess {
+      0% {
+        box-shadow: 0 0 0px #00c853;
+      }
+      50% {
+        box-shadow: 0 0 20px #00c853;
+      }
+      100% {
+        box-shadow: 0 0 0px #00c853;
+      }
+    }
+      #result {
+        text-align: center;
+        margin-top: 1.5rem;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      #order-details {
+        margin-top: 2rem;
+        background-color: #fff;
+        padding: 1rem;
+        border-radius: 10px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #ccc;
+        display: none;
+      }
+
+      .details-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      @media (min-width: 600px) {
+        .details-container {
+          flex-direction: row;
+        }
+      }
+
+      #order-info,
+      #location-info {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      #order-info li,
+      #location-info li {
+        margin-bottom: 0.5em;
+      }
+
+      #match-result {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 500px;
+        background-color: rgba(255, 255, 255, 0.5); 
+        text-align: center;
+        font-size: 1.1rem;
+        margin-top: 0; 
+        padding: 0.5rem;
+        border-radius: 6px;
+        display: none;
+        z-index: 999; 
+      }
+    </style>
+  </head>
+  <body>
+    <div class="qr-block">
+      <label for="order-number">注文番号:</label>
+      <div class="input-group">
+        <input type="text" id="order-number" />
+        <button onclick="startScan('order')">QRスキャン</button>
+        <label><input type="radio" name="zoom-order" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-order" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-order" value="8"> 8x</label>
+      </div>
+      <div class="qr-container" id="qr-container-order">
+        <div id="qr-reader-order"></div>
+        <div class="scan-line"></div>
+        <button onclick="closeContainer('order')">閉じる</button>
+      </div>
+      <div id="order-info"></div>
+    </div>
+
+    <div class="qr-block">
+      <label for="location-number">置場番号:</label>
+      <div class="input-group">
+        <input type="text" id="location-number" />
+        <button onclick="startScan('location')">QRスキャン</button>
+        <label><input type="radio" name="zoom-location" value="1" checked> 1x</label>
+        <label><input type="radio" name="zoom-location" value="3"> 3x</label>
+        <label><input type="radio" name="zoom-location" value="8"> 8x</label>
+      </div>
+      <div class="qr-container" id="qr-container-location">
+        <div id="qr-reader-location"></div>
+        <div class="scan-line"></div>
+        <button onclick="closeContainer('location')">閉じる</button>
+      </div>
+      <div id="location-info"></div>
+    </div>
+
+    <div id="result">
+      <button onclick="validate()">照合</button>
+      <button id="shipping-btn" onclick="shipping()" disabled>出荷</button>
+    </div>
+
+    <div id="match-result"></div>
+    <div style="display:none">
+      <div id="hidden-scanner"></div>
+    </div>
+ 
+    
+    <script>
+      const orderData = {
+        'CODE-12345678': {
+          製品名: '普通品1',
+          重量: '120Ton',
+          出荷日: '2025年5月15日',
+          トラックナンバー: '8888'
+        },
+        'CODE-13579246': {
+          製品名: '特注品A',
+          重量: '80Ton',
+          出荷日: '2025年6月1日',
+          トラックナンバー: '7777'
+        }
+      };
+
+      const locationData = {
+        'LOC-028': {
+          場所: '第3倉庫・北エリア',
+          製品: '普通品1',
+          在庫: '200Ton',
+          備考: ''
+        },
+        'LOC-027': {
+          場所: '第2倉庫・南エリア',
+          製品: '特注品A',
+          在庫: '50Ton',
+        }
+      };
+
+      window.addEventListener("DOMContentLoaded", async () => {
+        const hiddenScanner = new Html5Qrcode("hidden-scanner");
+
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const backCamera = await selectBestBackCamera(videoDevices);
+        const config = {
+          fps: 1, 
+          qrbox: { width: 50, height: 50 },
+          aspectRatio: 1.777,
+          videoConstraints: {
+            deviceId: { exact: backCamera.deviceId },
+            width: { ideal: 8000 },
+            height: { ideal: 4000 },
+            focusMode: "continuous",
+            advanced: [{ zoom: 8 }] 
+          }
+        };
+
+        try {
+          await hiddenScanner.start(
+            config.videoConstraints,
+            config,
+            () => {}, 
+            () => {}
+          );
+        } catch (err) {
+          console.warn("隐式扫描器启动失败:", err);
+        }
+      });
+
+
+      async function selectBestBackCamera(videoDevices) {
+        const envCameras = videoDevices.filter(device =>
+          /back|rear|environment/i.test(device.label)
+        );
+      
+        if (envCameras.length === 1) return envCameras[0];
+        if (envCameras.length === 0) return videoDevices[0]; // fallback
+      
+
+        let bestCamera = null;
+        let bestHeight = 0;
+      
+        for (const device of envCameras) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                deviceId: { exact: device.deviceId },
+                width: { ideal: 8000 },
+                height: { ideal: 4000 }
+              }
+            });
+      
+            const track = stream.getVideoTracks()[0];
+            const settings = track.getSettings();
+      
+            if (settings.height > bestHeight) {
+              bestHeight = settings.height;
+              bestCamera = device;
+            }
+      
+            track.stop(); 
+          } catch (e) {
+            console.warn("Failed to get stream for device", device.label, e);
+          }
+        }
+      
+        return bestCamera || envCameras[0]; // fallback
+      }
+
+
+      let scanners = {};
+
+      async function startScan(type) {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const backCameraList = videoDevices.find(device =>
+          /back|rear|environment/i.test(device.label)
+        )
+
+        const backCamera = await selectBestBackCamera(videoDevices);
+
+        if (!backCamera) {
+          alert("NO CAMERA DETECTED");
+          return;
+        }
+      
+        const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
+        const containerId = type === 'order' ? "qr-container-order" : "qr-container-location";
+        const inputId = type === 'order' ? "order-number" : "location-number";
+      
+        if (scanners[type]) {
+          await scanners[type].stop();
+          await scanners[type].clear();
+          document.getElementById(readerId).innerHTML = "";
+          scanners[type] = null;
+        }
+        const zoomRadioName = `zoom-${type}`;
+        const zoomValue = parseFloat(document.querySelector(`input[name="${zoomRadioName}"]:checked`)?.value || "1");
+
+        
+        const qrScanner = new Html5Qrcode(readerId);
+        scanners[type] = qrScanner;
+      
+        const config = {
+          facingMode: "environment",
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.777,
+          zoom: zoomValue,
+          videoConstraints: {
+            deviceId: { exact: backCamera.deviceId },
+            width: { ideal: 8000 },
+            height: { ideal: 4000 },
+            focusMode: "continuous",
+            advanced: [{ zoom: zoomValue }]
+          }
+        };
+        const qrContainer = document.getElementById(containerId);
+
+        if (qrContainer) {
+          qrContainer.style.display = 'block'; 
+        }
+        
+        qrScanner.start(
+          { facingMode: "environment" },
+          config.videoConstraints,
+          config,
+          (decodedText) => {
+            document.getElementById(inputId).value = decodedText;
+            const container = document.getElementById(readerId).closest('.qr-container');
+            if (container) {
+
+              container.classList.add('scan-success');
+              setTimeout(() => container.classList.remove('scan-success'), 200);
+            }
+      
+            qrScanner.stop().then(() => {
+              qrScanner.clear();
+              document.getElementById(readerId).innerHTML = "";
+              scanners[type] = null;
+              qrContainer.style.display = 'none';
+              showInfo(type);
+            });
+          },
+          (errorMessage) => {
+            // console.warn("Scan error:", errorMessage);
+          }
+        );
+      }
+
+      function closeContainer(type) {
+        const readerId = type === 'order' ? "qr-reader-order" : "qr-reader-location";
+        const containerId = type === 'order' ? "qr-container-order" : "qr-container-location";
+        const qrContainer = document.getElementById(containerId);
+        
+        if (scanners[type]) {
+          scanners[type].stop().then(() => {
+            scanners[type].clear();
+            document.getElementById(readerId).innerHTML = "";
+            scanners[type] = null;
+            qrContainer.style.display = 'none';
+          });
+        } else {
+          qrContainer.style.display = 'none';
+        }
+      }
+
+      function showInfo (type) {
+
+        if (type === 'order') {
+          const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
+          const orderInfoDiv = document.getElementById('order-info');
+
+          if (!orderNo) {
+              orderInfoDiv.textContent = '';
+              return;
+          }
+
+          const order = orderData[orderNo];
+          if (order) {
+              orderInfoDiv.innerHTML = `
+                  <h3>注文詳細</h3>
+                  <p><strong>製品名:</strong> ${order.製品名}</p>
+                  <p><strong>重量:</strong> ${order.重量}</p>
+                  <p><strong>出荷日:</strong> ${order.出荷日}</p>
+                  <p><strong>トラックナンバー:</strong> ${order.トラックナンバー}</p>
+              `;
+          } else {
+              orderInfoDiv.textContent = '注文番号が見つかりません';
+          }
+        }
+        if( type === 'location') {
+          const locNo = document.getElementById('location-number').value.trim().toUpperCase();
+          const locationInfoDiv = document.getElementById('location-info');
+          if (!locNo) {
+              locationInfoDiv.textContent = '';
+              return;
+          }
+
+          const location = locationData[locNo];
+          if (location) {
+              locationInfoDiv.innerHTML = `
+                  <h3>置場詳細</h3>
+                  <p><strong>置場番号:</strong> ${locNo}</p>
+                  <p><strong>場所:</strong> ${location.場所}</p>
+                  <p><strong>製品:</strong> ${location.製品}</p>
+                  <p><strong>在庫:</strong> ${location.在庫}</p>
+                  <p><strong>備考:</strong> ${location.備考 || '-'}</p>
+              `;
+          } else {
+              locationInfoDiv.textContent = '置場番号が見つかりません';
+          }
+        }
+      };
+
+      function validate() {
+        const orderNo = document.getElementById('order-number').value.trim().toUpperCase();
+        const locNo = document.getElementById('location-number').value.trim().toUpperCase();
+        const resultBox = document.getElementById('match-result');
+        const shippingBtn = document.getElementById('shipping-btn');
+        const order = orderData[orderNo];
+        const location = locationData[locNo];
+
+        if (!order || !location) {
+          alert('注文番号または置場番号が無効です');
+          detailsDiv.style.display = 'none';
+          resultBox.style.display = 'none';
+          return;
+        }
+
+        resultBox.style.display = 'block';
+        setTimeout(() => {
+          resultBox.style.display = 'none';
+        }, 5000);
+
+        if (order.製品名 === location.製品) {
+          resultBox.textContent = '✔ 製品名一致しています';
+          resultBox.style.backgroundColor = '#d4f5d4';
+          resultBox.style.color = '#006600';
+          shippingBtn.disabled = false;
+        } else {
+          resultBox.textContent = '✘ 製品名が一致しません';
+          resultBox.style.backgroundColor = '#f8d7da';
+          resultBox.style.color = '#990000';
+          shippingBtn.disabled = true;
+        }
+      }
+
+      function shipping() {
+        alert("出荷処理を実行しました！");
+      }
+    </script>
+  </body>
+</html>
