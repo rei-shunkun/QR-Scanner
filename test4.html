@@ -2,83 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>iOS 后置摄像头 + 二维码扫描</title>
-  <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js"></script>
+  <title>iOS 强制后置扫码</title>
   <style>
-    body { font-family: sans-serif; padding: 1rem; }
-    #reader { width: 300px; margin: auto; }
-    video { width: 100%; border-radius: 8px; }
-    pre { background: #f0f0f0; padding: 1rem; border-radius: 6px; font-size: 0.85rem; overflow-x: auto; }
-    input { width: 100%; padding: 0.5rem; margin-top: 1rem; font-size: 1rem; }
+    #qr-reader {
+      width: 300px;
+      margin: auto;
+      border: 1px solid #1976d2;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #settings, #capabilities {
+      font-size: 0.9em;
+      white-space: pre-wrap;
+      background: #f0f0f0;
+      padding: 8px;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
-  <h2>扫码测试（iOS 后置摄像头优先）</h2>
 
-  <div id="reader"></div>
-  <input type="text" id="result" placeholder="扫描结果会显示在这里">
+  <h3>扫码演示</h3>
+  <button onclick="startScanner()">开始扫码</button>
+  <div id="qr-reader"></div>
+  <div id="settings">🎛️ <strong>Settings:</strong></div>
+  <div id="capabilities">📋 <strong>Capabilities:</strong></div>
+  <div><strong>扫码结果：</strong><span id="scan-result">无</span></div>
 
-  <h3>摄像头 Settings</h3>
-  <pre id="settings">等待中...</pre>
-
-  <h3>摄像头 Capabilities</h3>
-  <pre id="capabilities">等待中...</pre>
+  <!-- 加载 html5-qrcode 库 -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js"></script>
 
   <script>
     async function startScanner() {
-      const resultEl = document.getElementById("result");
-      const settingsEl = document.getElementById("settings");
-      const capabilitiesEl = document.getElementById("capabilities");
-      const reader = new Html5Qrcode("reader");
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(d => d.kind === 'videoinput');
 
-      // 先强制请求权限
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-      } catch (err) {
-        alert("无法获取摄像头权限");
-        return;
-      }
+      // 优先尝试使用后置摄像头
+      const backCamera = videoDevices.find(d => d.label.toLowerCase().includes('back')) || videoDevices[0];
 
-      let stream;
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { exact: "environment" } }
-        });
-      } catch (err) {
-        console.warn("后置摄像头失败，回退默认", err);
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      }
+      const readerId = "qr-reader";
+      const qrScanner = new Html5Qrcode(readerId);
 
-      const track = stream.getVideoTracks()[0];
-      const settings = track.getSettings();
-      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
-
-      settingsEl.textContent = JSON.stringify(settings, null, 2);
-      capabilitiesEl.textContent = JSON.stringify(capabilities, null, 2);
-
-      // 停掉手动创建的流（释放），交由 Html5Qrcode 控制
-      stream.getTracks().forEach(t => t.stop());
-
-      // 启动 QR 扫码
-      reader.start(
-        { facingMode: { exact: "environment" } }, // 再次尝试后置
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
-        decodedText => {
-          resultEl.value = decodedText;
-          reader.stop(); // 扫到一次后停止
-        },
-        errorMsg => {
-          // 可忽略扫描错误
+      // 设置扫码配置
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.777,
+        advanced: [{ zoom: 3 }],
+        videoConstraints: {
+          deviceId: { exact: backCamera.deviceId },
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          focusMode: "continuous",
+          advanced: [{ zoom: 3 }]
         }
-      ).catch(err => {
-        console.error("扫码器启动失败：", err);
+      };
+
+      qrScanner.start(
+        config.videoConstraints,
+        config,
+        (decodedText) => {
+          document.getElementById("scan-result").textContent = decodedText;
+          qrScanner.stop().then(() => qrScanner.clear());
+        },
+        (err) => {
+          console.warn(err);
+        }
+      ).then(() => {
+        const video = document.querySelector(`#${readerId} video`);
+        if (video) {
+          const track = video.srcObject.getVideoTracks()[0];
+          const settings = track.getSettings();
+          const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+          document.getElementById("settings").textContent = `🎛️ Settings:\n${JSON.stringify(settings, null, 2)}`;
+          document.getElementById("capabilities").textContent = `📋 Capabilities:\n${JSON.stringify(capabilities, null, 2)}`;
+        }
       });
     }
-
-    window.onload = startScanner;
   </script>
 </body>
 </html>
