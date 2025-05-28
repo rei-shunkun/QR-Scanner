@@ -380,7 +380,7 @@
           aspectRatio: 1.777,
           zoom: zoomValue,
           videoConstraints: {
-            
+            facingMode: "environment",
             width: { ideal: 8000 },
             height: { ideal: 4000 },
             focusMode: "continuous",
@@ -394,7 +394,6 @@
         }
         
         qrScanner.start(
-          { facingMode: "environment" },
           config.videoConstraints,
           config,
           (decodedText) => {
