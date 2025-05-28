@@ -103,15 +103,6 @@
       margin: 1rem auto; 
     }
 
-    .qr-container video {
-      display: block;
-      width: 100%;
-      height: 100%;
-      height: auto;
-      object-fit: cover;
-      transform-origin: center center;
-    }
-
     @keyframes scanMove {
       0% {
         top: 0;
@@ -302,14 +293,11 @@
         
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
-        const baseSize = 250;
-        const minSize = 50;
-        const boxSize = Math.max(baseSize / zoomValue, minSize);
       
         const config = {
           facingMode: "environment",
           fps: 10,
-          qrbox: { width: boxSize, height: boxSize },
+          qrbox: { width: 250, height: 250 },
           aspectRatio: 1.777,
           zoom: zoomValue,
           videoConstraints: {
@@ -349,18 +337,7 @@
           (errorMessage) => {
             // console.warn("Scan error:", errorMessage);
           }
-        ).then(() => {
-            // 等待 video 元素插入 DOM
-            setTimeout(() => {
-              const video = document.querySelector(`#${readerId} video`);
-              if (video) {
-                const zoomRatio = zoomValue; // 比如 1.5, 2.0
-                video.style.transform = `scale(${zoomRatio})`;
-                video.style.transformOrigin = "center center";
-                video.style.objectFit = "cover";
-              }
-            }, 300); // 确保 video 已加载
-          });
+        );
       }
 
       function closeContainer(type) {
