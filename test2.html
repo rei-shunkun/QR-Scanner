@@ -302,11 +302,14 @@
         
         const qrScanner = new Html5Qrcode(readerId);
         scanners[type] = qrScanner;
+        const baseSize = 250;
+        const minSize = 50;
+        const boxSize = Math.max(baseSize / zoomValue, minSize);
       
         const config = {
           facingMode: "environment",
           fps: 10,
-          qrbox: { width: 250/zoomValue, height: 250/zoomValue },
+          qrbox: { width: boxSize, height: boxSize },
           aspectRatio: 1.777,
           zoom: zoomValue,
           videoConstraints: {
