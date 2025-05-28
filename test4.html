@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>iOS 后置摄像头 + 二维码扫描</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    #reader { width: 300px; margin: auto; }
+    video { width: 100%; border-radius: 8px; }
+    pre { background: #f0f0f0; padding: 1rem; border-radius: 6px; font-size: 0.85rem; overflow-x: auto; }
+    input { width: 100%; padding: 0.5rem; margin-top: 1rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>扫码测试（iOS 后置摄像头优先）</h2>
+
+  <div id="reader"></div>
+  <input type="text" id="result" placeholder="扫描结果会显示在这里">
+
+  <h3>摄像头 Settings</h3>
+  <pre id="settings">等待中...</pre>
+
+  <h3>摄像头 Capabilities</h3>
+  <pre id="capabilities">等待中...</pre>
+
+  <script>
+    async function startScanner() {
+      const resultEl = document.getElementById("result");
+      const settingsEl = document.getElementById("settings");
+      const capabilitiesEl = document.getElementById("capabilities");
+      const reader = new Html5Qrcode("reader");
+
+      // 先强制请求权限
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+      } catch (err) {
+        alert("无法获取摄像头权限");
+        return;
+      }
+
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { exact: "environment" } }
+        });
+      } catch (err) {
+        console.warn("后置摄像头失败，回退默认", err);
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      }
+
+      const track = stream.getVideoTracks()[0];
+      const settings = track.getSettings();
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+      settingsEl.textContent = JSON.stringify(settings, null, 2);
+      capabilitiesEl.textContent = JSON.stringify(capabilities, null, 2);
+
+      // 停掉手动创建的流（释放），交由 Html5Qrcode 控制
+      stream.getTracks().forEach(t => t.stop());
+
+      // 启动 QR 扫码
+      reader.start(
+        { facingMode: { exact: "environment" } }, // 再次尝试后置
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        decodedText => {
+          resultEl.value = decodedText;
+          reader.stop(); // 扫到一次后停止
+        },
+        errorMsg => {
+          // 可忽略扫描错误
+        }
+      ).catch(err => {
+        console.error("扫码器启动失败：", err);
+      });
+    }
+
+    window.onload = startScanner;
+  </script>
+</body>
+</html>

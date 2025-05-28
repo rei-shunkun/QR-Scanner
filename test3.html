@@ -42,6 +42,7 @@
     let qrScanner = null;
 
     async function listCameras() {
+      await navigator.mediaDevices.getUserMedia({ video: true }); // 先请求权限
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === "videoinput");
       const container = document.getElementById("camera-buttons");
