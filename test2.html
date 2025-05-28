@@ -306,7 +306,7 @@
         const config = {
           facingMode: "environment",
           fps: 10,
-          qrbox: { width: 250, height: 250 },
+          qrbox: { width: 250/zoomValue, height: 250/zoomValue },
           aspectRatio: 1.777,
           zoom: zoomValue,
           videoConstraints: {
@@ -354,7 +354,6 @@
                 const zoomRatio = zoomValue; // 比如 1.5, 2.0
                 video.style.transform = `scale(${zoomRatio})`;
                 video.style.transformOrigin = "center center";
-
                 video.style.objectFit = "cover";
               }
             }, 300); // 确保 video 已加载
