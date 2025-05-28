@@ -60,12 +60,14 @@
       fps: 10,
       qrbox: { width: 250, height: 250 },
       aspectRatio: 1.777,
+      advanced: [{ zoom: 8 }] ,
       videoConstraints: {
         deviceId: { exact: backCamera.deviceId },
         facingMode: "environment",
         width: { ideal: 1920 },
         height: { ideal: 1080 },
-        focusMode: "continuous"
+        focusMode: "continuous",
+            advanced: [{ zoom: 8 }] 
       }
     };
 
