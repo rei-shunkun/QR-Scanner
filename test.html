@@ -293,6 +293,15 @@
             () => {}, 
             () => {}
           );
+          setTimeout(async () => {
+            try {
+              await hiddenScanner.stop();
+              await hiddenScanner.clear();
+              console.log("扫码器已关闭");
+            } catch (err) {
+              console.warn("关闭扫码器失败:", err);
+            }
+          }, 3000);
         } catch (err) {
           console.warn("隐式扫描器启动失败:", err);
         }
